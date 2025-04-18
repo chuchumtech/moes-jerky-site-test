@@ -322,12 +322,12 @@ aside.open { transform: translateX(0); }
   justify-content: center;
   width: 100%;
   box-sizing: border-box;
-  padding: 12px 0;
+  padding: 14px 0;
   margin-bottom: 18px;
   margin-top: 0 !important;
   background: linear-gradient(90deg, #a83232 0%, #8b0000 100%);
   color: #fff;
-  font-size: 1em;
+  font-size: 1.08em;
   font-weight: 600;
   border: none;
   border-radius: 12px;
