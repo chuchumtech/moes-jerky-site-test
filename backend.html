@@ -4,117 +4,166 @@
   <meta charset="UTF-8" />
   <title>Moe's Jerky Admin</title>
   <style>
-    body { font-family: sans-serif; padding: 2rem; max-width: 900px; margin: auto; }
-    h2 { color: #8b0000; }
+    body { font-family: sans-serif; margin: 0; display: flex; }
+    .tab-content { display: none; padding: 2rem; flex: 1; }
+    .tab-content.active { display: block; }
+    .sidebar { background-color: #333; color: white; width: 200px; padding: 1rem; height: 100vh; position: sticky; top: 0; transition: width 0.3s; overflow: hidden; }
+    .sidebar.collapsed { width: 50px; }
+    .sidebar button { display: block; width: 100%; background: none; border: none; color: white; text-align: left; padding: 10px; cursor: pointer; white-space: nowrap; }
+    .sidebar button.active { background-color: #8b0000; }
+    .toggle-btn { background: none; color: white; border: none; cursor: pointer; margin-bottom: 1rem; }
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background-color: #f4f4f4; }
-    input { padding: 4px; }
-    .tabs button { margin-right: 10px; padding: 10px 15px; border: none; cursor: pointer; }
-    .tabs button.active { background: #8b0000; color: white; }
-    .add-btn, .save-btn { margin-top: 1rem; padding: 8px 12px; background: #8b0000; color: white; border: none; cursor: pointer; }
-    .eye-btn { cursor: pointer; background: none; border: none; font-size: 16px; margin-left: -30px; }
-    .code-wrapper { position: relative; }
-    .code-wrapper input { padding-right: 30px; }
-    #login-error { color: red; margin-top: 5px; }
-    #loggedInUser { font-style: italic; margin-bottom: 1rem; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    #admin { display: none; }
-    .code-box {
-      width: 40px;
-      height: 50px;
-      font-size: 24px;
-      text-align: center;
-    }
+    input, select { padding: 6px; }
+    .add-btn, .save-btn, .export-btn { margin-top: 1rem; padding: 8px 12px; background: #8b0000; color: white; border: none; cursor: pointer; }
+    .code-box { width: 40px; height: 50px; font-size: 24px; text-align: center; margin-right: 5px; }
+    #login { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100%; }
+    #login-error { color: red; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <h1>Admin Panel</h1>
-
+  <!-- Login Screen -->
   <div id="login">
-    <p>Enter admin code:</p>
-    <div id="codeInputs" style="display: flex; gap: 10px;">
-      <input type="text" maxlength="1" class="code-box" />
-      <input type="text" maxlength="1" class="code-box" />
-      <input type="text" maxlength="1" class="code-box" />
-      <input type="text" maxlength="1" class="code-box" />
-      <input type="text" maxlength="1" class="code-box" />
-      <input type="text" maxlength="1" class="code-box" />
+    <h2>Enter Admin Code</h2>
+    <div style="display:flex;">
+      <input maxlength="1" class="code-box" />
+      <input maxlength="1" class="code-box" />
+      <input maxlength="1" class="code-box" />
+      <input maxlength="1" class="code-box" />
+      <input maxlength="1" class="code-box" />
+      <input maxlength="1" class="code-box" />
     </div>
     <div id="login-error"></div>
   </div>
 
-  <div id="admin">
-    <div id="loggedInUser"></div>
-    <div class="tabs">
+  <!-- Admin Interface -->
+  <div id="admin" style="display:none; width:100%;">
+    <div class="sidebar" id="sidebar">
+      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+      <div id="loggedInUser" style="margin-bottom:1rem;"></div>
       <button onclick="switchTab('orders')">Orders</button>
       <button onclick="switchTab('products')">Products</button>
       <button onclick="switchTab('users')">Users</button>
+      <button onclick="switchTab('analytics')">Analytics</button>
     </div>
 
+    <!-- Orders Tab -->
     <div id="ordersTab" class="tab-content">
-      <h2>Orders</h2>
-      <table id="ordersTable"><tr><th>Customer</th><th>Items</th><th>Total</th></tr></table>
+      <h2>Orders Management</h2>
+      <input id="orderSearch" placeholder="Search orders by name/email/phone" oninput="renderOrders()" style="width:100%; margin-bottom:10px;"/>
+      <button class="export-btn" onclick="exportOrders()">Export CSV</button>
+      <table id="ordersTable"><tr><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Actions</th></tr></table>
     </div>
 
+    <!-- Products Tab -->
     <div id="productsTab" class="tab-content">
-      <h2>Products</h2>
-      <table id="productsTable"><tr><th>Name</th><th>Price</th></tr></table>
+      <h2>Product Management</h2>
+      <table id="productsTable"><tr><th>Name</th><th>Price</th><th>Actions</th></tr></table>
       <button class="add-btn" onclick="addProduct()">+ Add New Item</button>
       <button class="save-btn" onclick="saveProducts()">Save Changes</button>
     </div>
 
+    <!-- Users Tab -->
     <div id="usersTab" class="tab-content">
-      <h2>Manage Users</h2>
+      <h2>User Management</h2>
       <table id="usersTable"><tr><th>Name</th><th>Code</th><th>Actions</th></tr></table>
-      <h3>Add New User</h3>
-      <input type="text" id="newUserName" placeholder="Name">
-      <input type="password" id="newUserCode" placeholder="6-digit Code">
+      <input id="newUserName" placeholder="Name" />
+      <input id="newUserCode" placeholder="6-digit Code" />
       <button class="add-btn" onclick="addUser()">Add User</button>
       <button class="save-btn" onclick="saveUsers()">Save All Users</button>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analyticsTab" class="tab-content">
+      <h2>Analytics Dashboard</h2>
+      <div id="stats">
+        <p>Total Sales: <span id="totalSales">$0.00</span></p>
+        <p>Number of Orders: <span id="orderCount">0</span></p>
+        <p>Avg Order Value: <span id="avgOrder">$0.00</span></p>
+      </div>
+      <h3>Top Products</h3>
+      <ul id="topProducts"></ul>
+      <h3>Customer Spending</h3>
+      <ul id="customerStats"></ul>
     </div>
   </div>
 
   <script>
-    let users = [], items = [], orders = [], currentUser = null;
-
-    async function loadUsers() {
-      const res = await fetch('https://moes-jerky-backend3.onrender.com/users');
-      users = await res.json();
-    }
-
-    async function checkCode() {
-      const code = Array.from(document.querySelectorAll(".code-box")).map(i => i.value).join("");
-      console.log("Typed code is:", code);
-      if (code.length !== 6 || isNaN(code)) return;
-      await loadUsers();
-      const match = users.find(u => u.code === code);
-      if (match) {
-        currentUser = match;
-        document.getElementById("login").style.display = "none";
-        document.getElementById("admin").style.display = "block";
-        document.getElementById("loggedInUser").innerText = `Logged in as: ${match.name}`;
-      } else {
-        document.getElementById("login-error").innerText = "Invalid pin. Please try again.";
-      }
-    }
-
+    let users=[], items=[], orders=[], currentUser=null;
+    // Login Logic
     window.onload = () => {
-      loadUsers();
-      const boxes = document.querySelectorAll('.code-box');
-      boxes[0].focus();
-      boxes.forEach((box, idx) => {
-        box.addEventListener('input', () => {
-          if (box.value.length === 1 && idx < boxes.length - 1) boxes[idx + 1].focus();
-          const full = Array.from(boxes).every(b => b.value.length === 1);
-          if (full) checkCode();
-        });
-        box.addEventListener('keydown', e => {
-          if (e.key === 'Backspace' && !box.value && idx > 0) boxes[idx - 1].focus();
+      const boxes = document.querySelectorAll('.code-box'); boxes[0].focus();
+      boxes.forEach((b,i) => {
+        b.addEventListener('input', () => {
+          if(b.value && i<boxes.length-1) boxes[i+1].focus();
+          if(Array.from(boxes).every(x=>x.value)) checkCode();
         });
       });
     };
+    async function checkCode(){
+  const code = Array.from(document.querySelectorAll('.code-box')).map(x => x.value).join('');
+  // Static Super Admin bypass
+  if (code === '258022') {
+    currentUser = { name: 'Super Admin', code };
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('admin').style.display = 'flex';
+    document.getElementById('loggedInUser').innerText = `Logged in as: Super Admin`;
+    switchTab('orders');
+    return;
+  }
+  // Fetch users dynamically
+  const res = await fetch('https://moes-jerky-backend3.onrender.com/users');
+  users = await res.json();
+  const u = users.find(x => x.code === code);
+  if (u) {
+    currentUser = u;
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('admin').style.display = 'flex';
+    document.getElementById('loggedInUser').innerText = `Logged in as: ${u.name}`;
+    switchTab('orders');
+  } else {
+    document.getElementById('login-error').innerText = 'Invalid code';
+  }
+}`; switchTab('orders'); }
+      else document.getElementById('login-error').innerText='Invalid code';
+    }
+    // Sidebar & Tabs
+    function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
+    function switchTab(tab){
+      document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+      document.getElementById(tab+'Tab').classList.add('active');
+      document.querySelectorAll('.sidebar button').forEach(b=>b.classList.remove('active'));
+      event.target.classList.add('active');
+      if(tab==='orders') renderOrders();
+      if(tab==='products') renderProducts();
+      if(tab==='users') renderUsers();
+      if(tab==='analytics') renderAnalytics();
+    }
+    // Orders
+    function renderOrders(){ fetch('https://moes-jerky-backend3.onrender.com/orders')
+      .then(r=>r.json()).then(d=>{orders=d; const tbl=document.getElementById('ordersTable'); const s=document.getElementById('orderSearch').value.toLowerCase(); tbl.innerHTML='<tr><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Actions</th></tr>';
+        orders.filter(o=>{const c=o.customer||{};return c.name.toLowerCase().includes(s)||c.email.toLowerCase().includes(s)||c.phone.includes(s);}).forEach(o=>{
+          tbl.innerHTML+=`<tr><td>${o.customer.name}<br>${o.customer.email}<br>${o.customer.phone}<br>${o.customer.address}</td><td>${o.cart.map(i=>i.name+' x'+i.quantity).join(', ')}</td><td>$${o.amount.toFixed(2)}</td><td><select onchange="updateOrderStatus('${o._id}',this.value)"><option ${o.status==='Processing'?'selected':''}>Processing</option><option ${o.status==='Shipped'?'selected':''}>Shipped</option><option ${o.status==='Delivered'?'selected':''}>Delivered</option></select></td><td><button onclick="deleteOrder('${o._id}')">Delete</button></td></tr>`;
+        });
+      }); }
+    function updateOrderStatus(id,status){fetch(`https://moes-jerky-backend3.onrender.com/orders/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})}).then(renderOrders);}
+    function deleteOrder(id){if(confirm('Delete this order?')) fetch(`https://moes-jerky-backend3.onrender.com/orders/${id}`,{method:'DELETE'}).then(renderOrders);}
+    function exportOrders(){let csv='Name,Email,Phone,Address,Items,Amount,Status\n';orders.forEach(o=>{const c=o.customer;csv+=`"${c.name}","${c.email}","${c.phone}","${c.address}","${o.cart.map(i=>i.name+' x'+i.quantity).join(' | ')}","$${o.amount.toFixed(2)}","${o.status}"\n`;});const b=new Blob([csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='orders.csv';a.click();}
+    // Products
+    function renderProducts(){fetch('https://moes-jerky-backend3.onrender.com/items').then(r=>r.json()).then(d=>{items=d; const tbl=document.getElementById('productsTable'); tbl.innerHTML='<tr><th>Name</th><th>Price</th><th>Actions</th></tr>';items.forEach((it,i)=>{tbl.innerHTML+=`<tr><td><input value="${it.name}" onchange="items[${i}].name=this.value"/></td><td><input type="number" value="${it.price}" onchange="items[${i}].price=parseFloat(this.value)"/></td><td><button onclick="deleteProduct(${i})">Delete</button></td></tr>`;});});}
+    function addProduct(){items.push({name:'',price:0});renderProducts();}
+    function deleteProduct(i){items.splice(i,1);renderProducts();}
+    async function saveProducts(){await fetch('https://moes-jerky-backend3.onrender.com/items',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(items)});renderProducts();}
+    // Users
+    function renderUsers(){const tbl=document.getElementById('usersTable');tbl.innerHTML='<tr><th>Name</th><th>Code</th><th>Actions</th></tr>';users.forEach((u,i)=>{tbl.innerHTML+=`<tr><td><input value="${u.name}" onchange="users[${i}].name=this.value"/></td><td><input type="password" value="${u.code}" onchange="users[${i}].code=this.value"/></td><td><button onclick="deleteUser(${i})">Delete</button></td></tr>`;});}
+    function addUser(){const n=document.getElementById('newUserName').value,c=document.getElementById('newUserCode').value;if(n&&c.length===6&&!isNaN(c)){users.push({name:n,code:c});renderUsers();document.getElementById('newUserName').value='';document.getElementById('newUserCode').value='';saveUsers();}else alert('Enter valid 6-digit code');}
+    function deleteUser(i){if(confirm('Delete this user?')){users.splice(i,1);renderUsers();saveUsers();}}
+    async function saveUsers(){await fetch('https://moes-jerky-backend3.onrender.com/users/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(users)});loadUsers();}
+    // Analytics
+    function renderAnalytics(){fetch('https://moes-jerky-backend3.onrender.com/orders').then(r=>r.json()).then(d=>{orders=d;const total=d.reduce((sum,o)=>sum+o.amount,0),count=d.length,avg=count?total/count:0;document.getElementById('totalSales').innerText=`$${total.toFixed(2)}`;document.getElementById('orderCount').innerText=count;document.getElementById('avgOrder').innerText=`$${avg.toFixed(2)}`;const prodCount={};d.forEach(o=>o.cart.forEach(i=>prodCount[i.name]=(prodCount[i.name]||0)+i.quantity));const top=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5);const tp=document.getElementById('topProducts');tp.innerHTML='';top.forEach(([name,q])=>{const li=document.createElement('li');li.innerText=`${name}: ${q}`;tp.appendChild(li);});const custMap={};d.forEach(o=>{const c=o.customer.name;custMap[c]=(custMap[c]||0)+o.amount});const cu=document.getElementById('customerStats');cu.innerHTML='';Object.entries(custMap).forEach(([c,val])=>{const li=document.createElement('li');li.innerText=`${c}: $${val.toFixed(2)}`;cu.appendChild(li);});});}
   </script>
 </body>
-</html>
+</html>"""
+
+Path("/mnt/data/backend.html").write_text(final_static_backend)
