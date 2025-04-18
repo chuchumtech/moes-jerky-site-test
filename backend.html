@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Moe's Jerky Admin</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; max-width: 900px; margin: auto; }
+    h2 { color: #8b0000; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    input { padding: 4px; }
+    .tabs button { margin-right: 10px; padding: 10px 15px; border: none; cursor: pointer; }
+    .tabs button.active { background: #8b0000; color: white; }
+    .add-btn, .save-btn { margin-top: 1rem; padding: 8px 12px; background: #8b0000; color: white; border: none; cursor: pointer; }
+    .eye-btn { cursor: pointer; background: none; border: none; font-size: 16px; margin-left: -30px; }
+    .code-wrapper { position: relative; }
+    .code-wrapper input { padding-right: 30px; }
+    #login-error { color: red; margin-top: 5px; }
+    #loggedInUser { font-style: italic; margin-bottom: 1rem; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    #admin { display: none; }
+    .code-box {
+      width: 40px;
+      height: 50px;
+      font-size: 24px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+
+  <div id="login">
+    <p>Enter admin code:</p>
+    <div id="codeInputs" style="display: flex; gap: 10px;">
+      <input type="text" maxlength="1" class="code-box" />
+      <input type="text" maxlength="1" class="code-box" />
+      <input type="text" maxlength="1" class="code-box" />
+      <input type="text" maxlength="1" class="code-box" />
+      <input type="text" maxlength="1" class="code-box" />
+      <input type="text" maxlength="1" class="code-box" />
+    </div>
+    <div id="login-error"></div>
+  </div>
+
+  <div id="admin">
+    <div id="loggedInUser"></div>
+    <div class="tabs">
+      <button onclick="switchTab('orders')">Orders</button>
+      <button onclick="switchTab('products')">Products</button>
+      <button onclick="switchTab('users')">Users</button>
+    </div>
+
+    <div id="ordersTab" class="tab-content">
+      <h2>Orders</h2>
+      <table id="ordersTable"><tr><th>Customer</th><th>Items</th><th>Total</th></tr></table>
+    </div>
+
+    <div id="productsTab" class="tab-content">
+      <h2>Products</h2>
+      <table id="productsTable"><tr><th>Name</th><th>Price</th></tr></table>
+      <button class="add-btn" onclick="addProduct()">+ Add New Item</button>
+      <button class="save-btn" onclick="saveProducts()">Save Changes</button>
+    </div>
+
+    <div id="usersTab" class="tab-content">
+      <h2>Manage Users</h2>
+      <table id="usersTable"><tr><th>Name</th><th>Code</th><th>Actions</th></tr></table>
+      <h3>Add New User</h3>
+      <input type="text" id="newUserName" placeholder="Name">
+      <input type="password" id="newUserCode" placeholder="6-digit Code">
+      <button class="add-btn" onclick="addUser()">Add User</button>
+      <button class="save-btn" onclick="saveUsers()">Save All Users</button>
+    </div>
+  </div>
+
+  <script>
+    let users = [], items = [], orders = [], currentUser = null;
+
+    async function loadUsers() {
+      const res = await fetch('https://moes-jerky-backend3.onrender.com/users');
+      users = await res.json();
+    }
+
+    async function checkCode() {
+      const code = Array.from(document.querySelectorAll(".code-box")).map(i => i.value).join("");
+      console.log("Typed code is:", code);
+      if (code.length !== 6 || isNaN(code)) return;
+      await loadUsers();
+      const match = users.find(u => u.code === code);
+      if (match) {
+        currentUser = match;
+        document.getElementById("login").style.display = "none";
+        document.getElementById("admin").style.display = "block";
+        document.getElementById("loggedInUser").innerText = `Logged in as: ${match.name}`;
+      } else {
+        document.getElementById("login-error").innerText = "Invalid pin. Please try again.";
+      }
+    }
+
+    window.onload = () => {
+      loadUsers();
+      const boxes = document.querySelectorAll('.code-box');
+      boxes[0].focus();
+      boxes.forEach((box, idx) => {
+        box.addEventListener('input', () => {
+          if (box.value.length === 1 && idx < boxes.length - 1) boxes[idx + 1].focus();
+          const full = Array.from(boxes).every(b => b.value.length === 1);
+          if (full) checkCode();
+        });
+        box.addEventListener('keydown', e => {
+          if (e.key === 'Backspace' && !box.value && idx > 0) boxes[idx - 1].focus();
+        });
+      });
+    };
+  </script>
+</body>
+</html>
