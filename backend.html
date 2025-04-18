@@ -29,17 +29,33 @@
     /* Sidebar */
     .sidebar { position: fixed; top: 0; left: 0; width: 200px; height: 100%; background: var(--secondary-color); color: #fff; padding: 1.5rem 1rem; display: flex; flex-direction: column; transition: width var(--transition-time); }
 .sidebar.collapsed { width: 60px; }
-.sidebar .toggle-btn { align-self: flex-end; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; margin-bottom: 2rem; }
+.sidebar .sidebar-header { position: absolute; top: 0; right: 0; width: 100%; display: flex; justify-content: flex-end; z-index: 2; }
+.sidebar .toggle-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; margin: 12px 12px 0 0; padding: 0; } 
+.sidebar { position: fixed; top: 0; left: 0; width: 200px; height: 100%; background: var(--secondary-color); color: #fff; padding: 2.8rem 1rem 1.5rem 1rem; display: flex; flex-direction: column; transition: width var(--transition-time); box-sizing: border-box; }
+.sidebar.collapsed { padding-top: 2.8rem; }
 .sidebar .sidebar-link { display: flex; align-items: center; padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-radius: var(--border-radius); cursor: pointer; transition: background var(--transition-time); }
 .sidebar .sidebar-link.active, .sidebar .sidebar-link:hover { background: var(--primary-color); }
 .sidebar .sidebar-icon { display: inline-block; min-width: 24px; text-align: center; font-size: 1.2em; }
+.sidebar.collapsed .sidebar-link { justify-content: center; }
+.sidebar.collapsed .sidebar-icon { margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+
 .sidebar .sidebar-text { margin-left: 18px; transition: opacity 0.2s, width 0.2s; white-space: nowrap; }
 .sidebar.collapsed .sidebar-text { opacity: 0; width: 0; overflow: hidden; pointer-events: none; }
 .sidebar #loggedInUser { margin-bottom: 2rem; font-size: 0.9rem; font-style: italic; }
+.sidebar.collapsed #loggedInUser { display: none; }
 .sidebar .sidebar-link { min-height: 44px; }
     /* Content */
     .content { margin-left: 200px; padding: 2rem; height: 100%; overflow-y: auto; transition: margin-left var(--transition-time); width: calc(100% - 200px); }
-    .sidebar.collapsed + .content { margin-left: 60px; width: calc(100% - 60px); }
+    .sidebar.collapsed + .content {
+  margin-left: 60px;
+  width: calc(100% - 60px);
+  display: flex;
+  justify-content: center;
+}
+.sidebar.collapsed + .content > * {
+  margin: 0 auto;
+}
+
     /* Tabs */
     .tab-content { display: none; background: #fff; padding: 1.5rem; border-radius: var(--border-radius); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .tab-content.active { display: block; }
@@ -389,8 +405,42 @@ function showAddUserForm() {
   document.getElementById('newUserCode').value = '';
   setTimeout(()=>document.getElementById('newUserName').focus(), 100);
 }
-    async function addUser() { const n=document.getElementById('newUserName').value, c=document.getElementById('newUserCode').value; if(n&&c.length===6&&!isNaN(c)){ users.push({name:n,code:c}); renderUsers(); document.getElementById('newUserName').value=''; document.getElementById('newUserCode').value=''; saveUsers(); } else alert('Enter valid 6-digit code'); }
-    async function deleteUser(i) { if(confirm('Delete this user?')){ users.splice(i,1); renderUsers(); saveUsers(); }}
+    async function addUser() {
+  const n = document.getElementById('newUserName').value.trim();
+  const c = document.getElementById('newUserCode').value.trim();
+  if (n && c.length === 6 && !isNaN(c)) {
+    const res = await fetch('https://moes-jerky-backend3.onrender.com/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: n, code: c })
+    });
+    if (res.ok) {
+      document.getElementById('newUserName').value = '';
+      document.getElementById('newUserCode').value = '';
+      renderUsers();
+    } else {
+      alert('Failed to add user');
+    }
+  } else {
+    alert('Enter valid 6-digit code');
+  }
+}
+    async function deleteUser(i) {
+  if (!confirm('Delete this user?')) return;
+  const user = users[i];
+  if (!user || !user._id) {
+    alert('User not found or missing ID');
+    return;
+  }
+  const res = await fetch(`https://moes-jerky-backend3.onrender.com/users/${user._id}`, {
+    method: 'DELETE'
+  });
+  if (res.ok) {
+    renderUsers();
+  } else {
+    alert('Failed to delete user');
+  }
+}
     async function saveUsers() { await fetch('https://moes-jerky-backend3.onrender.com/users',{ method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(users) }); renderUsers(); }
     // Analytics
 // Chart.js chart instances
