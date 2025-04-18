@@ -34,21 +34,21 @@
   background: none;
   border: none;
   cursor: pointer;
-  margin: 24px 20px 0 0;
+  margin: 16px 10px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
 }
 #sidebarToggle .hamburger {
-  width: 38px;
-  height: 5px;
+  width: 28px;
+  height: 4px;
   background: #fff;
-  margin: 6px 0;
-  border-radius: 4px;
+  margin: 5px 0;
+  border-radius: 3px;
   transition: all 0.3s;
 }
 
@@ -209,8 +209,10 @@ select.modern-input:focus {
       <div id="datesTab" class="tab-content">
         <h2>Delivery Dates Management</h2>
         <div class="date-picker-row">
-  <input type="date" id="newDateInput" class="modern-input date-input" />
+  <div class="date-picker-row" style="display:flex;gap:12px;align-items:center;max-width:400px;margin-bottom:1.2rem;">
+  <input type="date" id="newDateInput" class="modern-input date-input" style="max-width:220px;flex:1 0 160px;" />
   <button class="modern-btn add-date-btn" onclick="addDeliveryDate()">Add Date</button>
+</div>
 </div>
         <table id="datesTable">
           <tr><th>Date</th><th>Actions</th></tr>
@@ -224,9 +226,11 @@ select.modern-input:focus {
   <tbody id="usersTableBody"></tbody>
 </table>
 <div id="addUserForm" style="display:none; margin-top:1rem;">
-  <input id="newUserName" class="modern-input" type="text" placeholder="Name" />
-  <input id="newUserCode" class="modern-input" type="password" placeholder="6-digit Code" />
-  <button class="save-btn" onclick="addUser()">Save User</button>
+  <div style="display:flex;gap:12px;align-items:center;max-width:400px;">
+    <input id="newUserName" class="modern-input" type="text" placeholder="Name" style="max-width:220px;flex:1 0 120px;" />
+    <input id="newUserCode" class="modern-input" type="number" placeholder="6-digit Code" maxlength="6" pattern="\d{6}" inputmode="numeric" style="max-width:160px;flex:1 0 80px;" />
+    <button class="save-btn" onclick="addUser()">Save User</button>
+  </div>
 </div>
 <button class="add-btn" id="showAddUserBtn" onclick="showAddUserForm()">Add User</button>
 <button class="save-btn" onclick="saveUsers()">Save All Users</button>
@@ -237,23 +241,33 @@ select.modern-input:focus {
   <!-- Controls -->
   <div class="analytics-controls">
     <label>Date Range:
-      <input type="date" id="analyticsStartDate" class="modern-input" style="width:auto;display:inline-block;" />
+      <input type="date" id="analyticsStartDate" class="modern-input" style="width:auto;display:inline-block;max-width:140px;" />
       to
-      <input type="date" id="analyticsEndDate" class="modern-input" style="width:auto;display:inline-block;" />
+      <input type="date" id="analyticsEndDate" class="modern-input" style="width:auto;display:inline-block;max-width:140px;" />
     </label>
     <label style="margin-left:1.5rem;">Analyze By:
-      <select id="analyticsMode" class="modern-input" style="width:auto;display:inline-block;">
+      <select id="analyticsMode" class="modern-input" style="width:auto;display:inline-block;max-width:120px;">
         <option value="order">Order Date</option>
         <option value="delivery">Delivery Date</option>
       </select>
     </label>
+    <label style="margin-left:1.5rem;">Delivery Date:
+      <select id="deliveryDateSelect" class="modern-input" style="width:auto;display:inline-block;max-width:180px;"></select>
+    </label>
     <button class="save-btn" onclick="renderAnalytics()" style="margin-left:1.5rem;">Update</button>
   </div>
+  <!-- Product Sales Summary Table -->
+  <div id="productSalesSummaryWrap" style="margin:0 0 1.2rem 0;padding:0.5rem 0;">
+    <table id="productSalesSummary" style="width:100%;max-width:440px;font-size:0.98em;margin:0 auto 0.7rem auto;border-collapse:collapse;background:#fff;box-shadow:0 1px 6px rgba(139,0,0,0.07);border-radius:10px;overflow:hidden;">
+      <thead><tr style="background:#f7f7f7;"><th style="padding:7px 12px;text-align:left;color:#8b0000;">Product</th><th style="padding:7px 12px;text-align:right;color:#8b0000;">Qty Sold</th></tr></thead>
+      <tbody id="productSalesSummaryBody"></tbody>
+    </table>
+  </div>
   <!-- Summary Dials -->
-  <div class="analytics-dials-row">
-    <canvas id="salesDial" width="160" height="160"></canvas>
-    <canvas id="ordersDial" width="160" height="160"></canvas>
-    <canvas id="avgOrderDial" width="160" height="160"></canvas>
+  <div class="analytics-dials-row" style="gap:1.2rem;margin-bottom:1.2rem;">
+    <canvas id="salesDial" width="110" height="110"></canvas>
+    <canvas id="ordersDial" width="110" height="110"></canvas>
+    <canvas id="avgOrderDial" width="110" height="110"></canvas>
   </div>
   <!-- Charts -->
   <div class="analytics-charts-row">
@@ -279,30 +293,66 @@ select.modern-input:focus {
 
   <script>
     let users = [], items = [], orders = [], currentUser = null;
-    window.onload = function() {
-      // Check localStorage for login
-      const loginData = JSON.parse(localStorage.getItem('moes_admin_login') || 'null');
-      if (loginData && loginData.expires > Date.now()) {
-        currentUser = loginData.user;
-        showAdmin();
-        return;
-      } else {
-        // If expired, clear it
-        localStorage.removeItem('moes_admin_login');
-      }
-      // Login setup
-      const boxes = document.querySelectorAll('.code-box');
-      boxes[0].focus();
-      boxes.forEach((b, i) => {
-        b.addEventListener('input', () => {
-          if (b.value && i < boxes.length - 1) boxes[i + 1].focus();
-          if ([...boxes].every(x => x.value)) checkCode();
-        });
-        b.addEventListener('keydown', e => {
-          if (e.key === 'Backspace' && !b.value && i > 0) boxes[i - 1].focus();
-        });
-      });
-    };
+    window.onload = async function() {
+  // Check localStorage for login
+  const loginData = JSON.parse(localStorage.getItem('moes_admin_login') || 'null');
+  if (loginData && loginData.expires > Date.now()) {
+    currentUser = loginData.user;
+    showAdmin();
+    return;
+  } else {
+    // If expired, clear it
+    localStorage.removeItem('moes_admin_login');
+  }
+  // Login setup
+  const boxes = document.querySelectorAll('.code-box');
+  boxes[0].focus();
+  boxes.forEach((b, i) => {
+    b.addEventListener('input', () => {
+      if (b.value && i < boxes.length - 1) boxes[i + 1].focus();
+      if ([...boxes].every(x => x.value)) checkCode();
+    });
+    b.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !b.value && i > 0) boxes[i - 1].focus();
+    });
+  });
+};
+
+// --- Analytics Delivery Date Dropdown Logic ---
+async function populateDeliveryDateDropdown() {
+  const res = await fetch('https://moes-jerky-backend3.onrender.com/delivery-dates');
+  let dates = await res.json();
+  dates = dates.filter(d => new Date(d.date) >= new Date()); // only upcoming
+  dates.sort((a, b) => new Date(a.date) - new Date(b.date));
+  const sel = document.getElementById('deliveryDateSelect');
+  sel.innerHTML = '<option value="">-- Select --</option>';
+  let closestIdx = 0;
+  let minDiff = Infinity;
+  const now = new Date();
+  dates.forEach((d, i) => {
+    const diff = new Date(d.date) - now;
+    if (diff >= 0 && diff < minDiff) { minDiff = diff; closestIdx = i; }
+    sel.innerHTML += `<option value="${d.date}">${formatDateWithDay(d.date)}</option>`;
+  });
+  // Default to closest upcoming
+  if (dates.length > 0) {
+    sel.selectedIndex = closestIdx + 1;
+  }
+}
+// On change, update analytics
+if (document.getElementById('deliveryDateSelect')) {
+  document.getElementById('deliveryDateSelect').addEventListener('change', () => {
+    // Clear date range if using dropdown
+    if (document.getElementById('deliveryDateSelect').value) {
+      document.getElementById('analyticsStartDate').value = '';
+      document.getElementById('analyticsEndDate').value = '';
+    }
+    renderAnalytics();
+  });
+}
+// Populate dropdown on admin load
+window.addEventListener('load', populateDeliveryDateDropdown);
+
     async function checkCode() {
       const code = [...document.querySelectorAll('.code-box')].map(x => x.value).join('');
       // Super Admin bypass
@@ -348,13 +398,13 @@ async function renderOrders() {
   }).forEach(o => {
     const c = o.customer || {};
     table.innerHTML += `<tr><td>${o.orderNumber || ''}</td><td>${c.name || ''}<br><span style='font-size:0.93em;color:#888;'>${c.email || ''}<br>${c.phone || ''}</span></td><td>${o.cart.map(i => `${i.name} x${i.quantity}`).join('<br>')}</td><td>$${o.amount?.toFixed(2) || '0.00'}</td><td>${o.deliveryDate ? formatDateWithDay(o.deliveryDate) : '-'}</td><td>
-              <select id="status-select-${o._id}" onchange="showSaveButton('${o._id}')">
+              <select id="status-select-${o._id}" class="modern-input" onchange="showSaveButton('${o._id}')">
                 <option ${o.status==='Processing'?'selected':''}>Processing</option>
                 <option ${o.status==='Shipped'?'selected':''}>Shipped</option>
                 <option ${o.status==='Delivered'?'selected':''}>Delivered</option>
               </select>
               <button id="save-status-${o._id}" class="save-btn" style="display:none; margin-left:8px; padding:0.45rem 1.1rem; font-size:0.95em;" onclick="saveOrderStatus('${o._id}')">Save</button>
-            </td><td><button onclick="deleteOrder('${o._id}')">Delete</button></td></tr>`;
+            </td><td><button class="modern-btn remove-btn" style="padding:0.35rem 1rem;font-size:0.98em;margin:0 2px;" onclick="deleteOrder('${o._id}')">Delete</button></td></tr>`;
   });
 }
     async function updateOrderStatus(id, status) {
@@ -381,7 +431,7 @@ async function renderOrders() {
     // Products
     async function renderProducts() { const res = await fetch('https://moes-jerky-backend3.onrender.com/items'); items = await res.json(); const tbl = document.getElementById('productsTable'); tbl.innerHTML = '<tr><th>Name</th><th>Price</th><th>Actions</th></tr>';
   items.forEach((it,i) => {
-    tbl.innerHTML += `<tr><td><input class="product-input" value="${it.name}" onchange="items[${i}].name=this.value"/></td><td><input type="number" class="product-input" value="${it.price}" onchange="items[${i}].price=parseFloat(this.value)"/></td><td><button class="modern-btn delete-btn" title="Delete" onclick="deleteProduct(${i})">🗑️</button></td></tr>`;
+    tbl.innerHTML += `<tr><td><input class="modern-input" value="${it.name}" onchange="items[${i}].name=this.value"/></td><td><input type="number" class="modern-input" value="${it.price}" onchange="items[${i}].price=parseFloat(this.value)"/></td><td><button class="icon-btn delete-btn" title="Delete" onclick="deleteProduct(${i})" style="background:none;border:none;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='#8B0000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 6 21 6'></polyline><path d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2'></path><line x1='10' y1='11' x2='10' y2='17'></line><line x1='14' y1='11' x2='14' y2='17'></line></svg></button></td></tr>`;
   }); }
     async function addProduct() {
   items.push({ name: '', price: 0 });
@@ -435,7 +485,7 @@ async function renderUsers() {
       <tr>
         <td><input class='modern-input' type='text' value='${u.name || ''}' onchange='users[${i}].name=this.value'/></td>
         <td><input class='modern-input' type='password' value='${u.code || ''}' onchange='users[${i}].code=this.value'/></td>
-        <td><button class='save-btn delete-btn' title='Delete' onclick='deleteUser(${i})'>🗑️</button></td>
+        <td><button class='save-btn delete-btn' title='Delete' onclick='deleteUser(${i})'><svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='#8B0000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 6 21 6'></polyline><path d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2'></path><line x1='10' y1='11' x2='10' y2='17'></line><line x1='14' y1='11' x2='14' y2='17'></line></svg></button></td>
       </tr>`;
   });
 }
@@ -489,6 +539,10 @@ function showAddUserForm() {
 let salesDialChart, ordersDialChart, avgOrderDialChart, salesTrendChart, topProductsChart, customerSpendingChart;
 
 async function renderAnalytics() {
+  // --- Get delivery date dropdown value ---
+  const deliveryDateSel = document.getElementById('deliveryDateSelect');
+  const selectedDeliveryDate = deliveryDateSel && deliveryDateSel.value;
+
   const res = await fetch('https://moes-jerky-backend3.onrender.com/orders');
   orders = await res.json();
   // --- Get filters ---
@@ -499,8 +553,12 @@ async function renderAnalytics() {
   let endDate = endInput.value ? new Date(endInput.value) : null;
   if (endDate) { endDate.setHours(23,59,59,999); }
   const dateMode = modeInput.value || 'order';
-  // --- Filter orders ---
+
   let filtered = orders.filter(o => {
+    // If delivery date selected, override other filters
+    if (selectedDeliveryDate) {
+      return o.deliveryDate && o.deliveryDate.slice(0,10) === selectedDeliveryDate.slice(0,10);
+    }
     let d = dateMode === 'delivery' ? new Date(o.deliveryDate) : new Date(o.createdAt);
     if (startDate && d < startDate) return false;
     if (endDate && d > endDate) return false;
@@ -537,12 +595,22 @@ async function renderAnalytics() {
     data: { labels: trendLabels, datasets: [{ label: 'Sales', data: trendData, fill: false, borderColor: '#8b0000', tension: 0.2, pointRadius: 3 }] },
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
   });
-  // --- Top Products Chart ---
-  if (topProductsChart) topProductsChart.destroy();
+  // --- Product Sales Summary Table ---
   let prodCount = {};
   filtered.forEach(o => o.cart.forEach(i => prodCount[i.name] = (prodCount[i.name]||0) + i.quantity));
   let prodLabels = Object.keys(prodCount);
   let prodData = prodLabels.map(k=>prodCount[k]);
+  // Fill summary table
+  const summaryBody = document.getElementById('productSalesSummaryBody');
+  if (summaryBody) {
+    summaryBody.innerHTML = '';
+    prodLabels.forEach((name, idx) => {
+      summaryBody.innerHTML += `<tr><td style='padding:7px 12px;'>${name}</td><td style='padding:7px 12px;text-align:right;'>${prodData[idx]}</td></tr>`;
+    });
+    if (prodLabels.length === 0) summaryBody.innerHTML = `<tr><td colspan='2' style='padding:8px;text-align:center;color:#888;'>No sales for this date.</td></tr>`;
+  }
+  // --- Top Products Chart ---
+  if (topProductsChart) topProductsChart.destroy();
   topProductsChart = new Chart(document.getElementById('topProductsChart'), {
     type: 'bar',
     data: { labels: prodLabels, datasets: [{ label: 'Sold', data: prodData, backgroundColor: '#a83232' }] },

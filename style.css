@@ -441,8 +441,59 @@ input.product-input:focus {
 }
 
 /* Modernize buttons in admin portal */
-.add-btn, .analytics-section {
+.modern-btn, .analytics-section {
   margin-bottom: 2.2rem;
+}
+
+.add-date-btn {
+  background: #8B0000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.2rem;
+  font-size: 1.04em;
+  font-weight: 500;
+  transition: background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 4px rgba(139,0,0,0.07);
+  margin-left: 0.3rem;
+}
+.add-date-btn:hover {
+  background: #6e0000;
+}
+
+.remove-btn {
+  background: #c62828;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 1rem;
+  font-size: 0.98em;
+  font-weight: 500;
+  margin: 0 2px;
+  transition: background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 4px rgba(198,40,40,0.09);
+}
+.remove-btn:hover {
+  background: #a31515;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.18s, background 0.18s;
+}
+.icon-btn svg {
+  display: block;
+  vertical-align: middle;
+}
+.icon-btn:hover svg {
+  filter: brightness(0.7);
+  stroke: #6e0000;
 }
 
 .analytics-controls {
