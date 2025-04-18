@@ -66,20 +66,23 @@
     th { background: var(--bg-color); font-weight: 600; }
     tr:nth-child(even) { background: #fcfcfc; }
     /* Inputs & Buttons */
-    input.product-input {
-  width: 100%;
-  padding: 0.65rem 1rem;
-  margin: 0.25rem 0;
-  border-radius: 8px;
+    input.modern-input,
+input[type="text"].modern-input,
+input[type="password"].modern-input,
+input[type="date"].modern-input,
+select.modern-input {
+  width: 95%;
+  padding: 0.75rem 1.1rem;
+  border-radius: 10px;
   border: 1.5px solid #d0d0d0;
   font-size: 1.08em;
   background: #fafbfc;
-  appearance: none;
-  -webkit-appearance: none;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  margin-bottom: 0.1rem;
   transition: border 0.2s, box-shadow 0.2s;
 }
-input.product-input:focus {
+input.modern-input:focus,
+select.modern-input:focus {
   border: 1.5px solid #8b0000;
   outline: none;
   box-shadow: 0 2px 8px rgba(139,0,0,0.10);
@@ -148,7 +151,7 @@ input.product-input:focus {
       <!-- Orders -->
       <div id="ordersTab" class="tab-content active">
         <h2>Orders Management</h2>
-        <input id="orderSearch" type="text" placeholder="Search orders..." oninput="renderOrders()" />
+        <input id="orderSearch" class="modern-input" type="text" placeholder="Search orders..." oninput="renderOrders()" />
         <button class="export-btn" onclick="exportOrders()">Export CSV</button>
         <table id="ordersTable">
           <tr><th>Order #</th><th>Customer</th><th>Items</th><th>Total</th><th>Delivery Date</th><th>Status</th><th>Actions</th></tr>
@@ -391,9 +394,9 @@ async function renderUsers() {
   users.forEach((u, i) => {
     tbody.innerHTML += `
       <tr>
-        <td><input class="modern-input" type="text" value="${u.name || ''}" onchange="users[${i}].name=this.value"/></td>
-        <td><input class="modern-input" type="password" value="${u.code || ''}" onchange="users[${i}].code=this.value"/></td>
-        <td><button class="modern-btn delete-btn" title="Delete" onclick="deleteUser(${i})">🗑️</button></td>
+        <td><input class='modern-input' type='text' value='${u.name || ''}' onchange='users[${i}].name=this.value'/></td>
+        <td><input class='modern-input' type='password' value='${u.code || ''}' onchange='users[${i}].code=this.value'/></td>
+        <td><button class='save-btn delete-btn' title='Delete' onclick='deleteUser(${i})'>🗑️</button></td>
       </tr>`;
   });
 }
