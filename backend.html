@@ -127,6 +127,16 @@
   <script>
     let users = [], items = [], orders = [], currentUser = null;
     window.onload = function() {
+      // Check localStorage for login
+      const loginData = JSON.parse(localStorage.getItem('moes_admin_login') || 'null');
+      if (loginData && loginData.expires > Date.now()) {
+        currentUser = loginData.user;
+        showAdmin();
+        return;
+      } else {
+        // If expired, clear it
+        localStorage.removeItem('moes_admin_login');
+      }
       // Login setup
       const boxes = document.querySelectorAll('.code-box');
       boxes[0].focus();
@@ -156,6 +166,8 @@
       document.getElementById('login').style.display = 'none';
       document.getElementById('admin').style.display = 'flex';
       document.getElementById('loggedInUser').innerText = `Logged in as: ${currentUser.name}`;
+      // Save login state with 5 min expiry
+      localStorage.setItem('moes_admin_login', JSON.stringify({ user: currentUser, expires: Date.now() + 5 * 60 * 1000 }));
       switchTab('orders');
     }
     function toggleSidebar() {
@@ -175,10 +187,11 @@
     async function renderOrders() {
       const res = await fetch('https://moes-jerky-backend3.onrender.com/orders'); orders = await res.json();
       const table = document.getElementById('ordersTable'), s = document.getElementById('orderSearch').value.toLowerCase();
-      table.innerHTML = '<tr><th>Customer</th><th>Items</th><th>Total</th><th>Type</th><th>Status</th><th>Actions</th></tr>';
+      table.innerHTML = '<tr><th>Order #</th><th>Customer</th><th>Items</th><th>Total</th><th>Type</th><th>Status</th><th>Actions</th></tr>';
       orders.filter(o => { const c = o.customer || {}; return c.name.toLowerCase().includes(s) || c.email.toLowerCase().includes(s) || c.phone.includes(s); }).forEach(o => {
         console.log('Order object:', o);
         table.innerHTML += `<tr>
+          <td>${o.orderNumber || '-'}</td>
           <td><a href="order.html?id=${o._id}" target="_blank" style="color:#8B0000; text-decoration:underline; font-weight:600;">${o.customer.name}</a></td>
           <td>${o.cart.map(i => i.name + ' x' + i.quantity).join(', ')}</td>
           <td>$${o.amount.toFixed(2)}</td>
@@ -208,7 +221,11 @@
     function exportOrders() { let csv='Name,Email,Phone,Address,Items,Amount,Status\n'; orders.forEach(o=>{ const c=o.customer; csv+=`"${c.name}","${c.email}","${c.phone}","${c.address}","${o.cart.map(i=>i.name+' x'+i.quantity).join(' | ')}","$${o.amount.toFixed(2)}","${o.status}"\n`; }); const b=new Blob([csv],{type:'text/csv'}), u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download='orders.csv'; a.click(); }
     // Products
     async function renderProducts() { const res = await fetch('https://moes-jerky-backend3.onrender.com/items'); items = await res.json(); const tbl = document.getElementById('productsTable'); tbl.innerHTML = '<tr><th>Name</th><th>Price</th><th>Actions</th></tr>'; items.forEach((it,i) => { tbl.innerHTML += `<tr><td><input value="${it.name}" onchange="items[${i}].name=this.value"/></td><td><input type="number" value="${it.price}" onchange="items[${i}].price=parseFloat(this.value)"/></td><td><button onclick="deleteProduct(${i})">Delete</button></td></tr>`; }); }
-    function addProduct() { items.push({name:'',price:0}); renderProducts(); }
+    async function addProduct() {
+  items.push({ name: '', price: 0 });
+  await saveProducts(); // Persist new item
+  renderProducts(); // Re-render with updated list
+}
     async function deleteProduct(i) { items.splice(i,1); renderProducts(); }
     async function saveProducts() { await fetch('https://moes-jerky-backend3.onrender.com/items',{ method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(items) }); renderProducts(); }
     // Users
