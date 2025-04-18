@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moe's Jerky Shop</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Moe's Jerky</h1>
+    <div class="cart-icon" onclick="toggleCart()">
+      <span class="cart-count" id="cartCount">0</span>
+    </div>
+  </header>
+  <main>
+    <div class="product-grid" id="products"></div>
+    <aside id="cartSidebar">
+      <button class="close-btn" onclick="toggleCart()">×</button>
+      <h2>Your Cart</h2>
+      <div id="cartItems"></div>
+      <div class="cart-total" id="cartSubtotal">Subtotal: $0.00</div>
+      <div class="delivery-option">
+        <label><input type="radio" name="fulfillment" value="pickup" checked onchange="updateFulfillment()" /> Pickup</label>
+        <label><input type="radio" name="fulfillment" value="delivery" onchange="updateFulfillment()" /> Delivery (+$2.99)</label>
+      </div>
+      <div class="cart-total" id="cartTotal">Total: $0.00</div>
+      <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
+      <div id="checkoutForm">
+        <button class="back-btn" onclick="showCart()">← Back to Cart</button>
+        <h3>Delivery / Pickup Details</h3>
+        <input type="text" id="custName" placeholder="Name" required />
+        <input type="tel" id="custPhone" placeholder="Phone" required />
+        <input type="email" id="custEmail" placeholder="Email" required />
+        <input type="text" id="custAddress" placeholder="Address (if delivery)" style="display:none; margin-top:8px;" required />
+        <div id="addrError" style="color:red; font-size:0.9em; display:none;">Please select a valid address from the suggestions.</div>
+        <div id="card-container" style="margin-top:1rem;"></div>
+        <div id="card-errors" style="color:red; font-size:0.9em; margin-top:0.5rem;"></div>
+        <button class="checkout-btn" onclick="completeOrder()">Complete Order</button>
+      </div>
+    </aside>
+  </main>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZzLNJTV5QdAJD4KkGNHqrZLEBxRg6f58&libraries=places" async defer></script>
+  <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+  <script>
+    let products = [], payments, card;
+    const cart = {};
+    let fulfillment = 'pickup', addressValid = true;
+    const fee = 2.99;
+    let addressAutocomplete;
+
+    async function loadProducts() {
+      const res = await fetch('https://moes-jerky-backend3.onrender.com/items');
+      products = await res.json();
+      renderProducts();
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('products');
+      grid.innerHTML = '';
+      products.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.setAttribute('data-id', p._id);
+        div.innerHTML = `
+          <h3>${p.name}</h3>
+          <p>$${p.price.toFixed(2)}</p>
+          <div id="qtyWrap-${p._id}">
+            <button class="btn" onclick="startCart('${p._id}')">Add to Cart</button>
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function startCart(id) {
+      cart[id] = 1;
+      const wrap = document.getElementById(`qtyWrap-${id}`);
+      wrap.innerHTML = `
+        <div class="qty-control">
+          <button class="btn-qty" onclick="updateCartQty('${id}', -1)">-</button>
+          <span class="qty-number" id="qty-${id}">1</span>
+          <button class="btn-qty" onclick="updateCartQty('${id}', 1)">+</button>
+        </div>
+      `;
+      renderCart();
+      toggleCart(true);
+    }
+
+    function updateCartQty(id, delta) {
+      if (!cart[id]) return;
+      cart[id] = Math.max(0, cart[id] + delta);
+      if (cart[id] === 0) {
+        delete cart[id];
+        const wrap = document.getElementById(`qtyWrap-${id}`);
+        if (wrap) {
+          wrap.innerHTML = `<button class="btn" onclick="startCart('${id}')">Add to Cart</button>`;
+        }
+      } else {
+        const span = document.getElementById(`qty-${id}`);
+        if (span) {
+          span.textContent = cart[id];
+        }
+      }
+      renderCart();
+    }
+
+    function renderCart() {
+      const itemsDiv = document.getElementById('cartItems');
+      itemsDiv.innerHTML = '';
+      let subtotal = 0;
+      Object.keys(cart).forEach(id => {
+        const prod = products.find(p => p._id === id);
+        const qty = cart[id];
+        const lineTotal = prod.price * qty;
+        subtotal += lineTotal;
+        const line = document.createElement('div');
+        line.className = 'cart-item';
+        line.innerHTML = `
+          <span>${prod.name} x${qty}</span>
+          <span>$${lineTotal.toFixed(2)}</span>
+          <div class="qty-control">
+            <button class="btn-qty" onclick="updateCartQty('${id}', -1)">-</button>
+            <span class="qty-number">${qty}</span>
+            <button class="btn-qty" onclick="updateCartQty('${id}', 1)">+</button>
+          </div>
+        `;
+        itemsDiv.appendChild(line);
+      });
+      document.getElementById('cartSubtotal').textContent = `Subtotal: $${subtotal.toFixed(2)}`;
+      updateTotal(subtotal);
+      document.getElementById('cartCount').textContent = Object.values(cart).reduce((a,b)=>a+b,0);
+    }
+
+    function updateFulfillment() {
+      fulfillment = document.querySelector('input[name="fulfillment"]:checked').value;
+      const addr = document.getElementById('custAddress');
+      addr.style.display = (fulfillment === 'delivery') ? 'block' : 'none';
+      addressValid = (fulfillment === 'pickup');
+      document.getElementById('addrError').style.display = 'none';
+      renderCart();
+    }
+
+    function updateTotal(subtotal) {
+      const total = fulfillment === 'delivery' ? subtotal + fee : subtotal;
+      document.getElementById('cartTotal').textContent = `Total: $${total.toFixed(2)}`;
+    }
+
+    function toggleCart(open) {
+      const aside = document.getElementById('cartSidebar');
+      aside.classList.toggle('open', open !== undefined ? open : !aside.classList.contains('open'));
+    }
+
+    function proceedToCheckout() {
+      document.getElementById('checkoutForm').classList.add('show');
+      document.getElementById('cartSidebar').classList.add('checkout-mode');
+    }
+
+    function showCart() {
+      document.getElementById('checkoutForm').classList.remove('show');
+      document.getElementById('cartSidebar').classList.remove('checkout-mode');
+    }
+
+    function initAddressAutocomplete() {
+      const input = document.getElementById('custAddress');
+      addressAutocomplete = new google.maps.places.Autocomplete(input, {
+        types: ['address'],
+        componentRestrictions: { country: 'us' }
+      });
+      addressAutocomplete.addListener('place_changed', () => {
+        const place = addressAutocomplete.getPlace();
+        addressValid = !!place.address_components;
+        document.getElementById('addrError').style.display = addressValid ? 'none' : 'block';
+      });
+    }
+
+    async function initializeSquare() {
+      payments = Square.payments('sandbox-sq0idb-LEAuGlM5uV3GUPF741VOOw','LEJEJJ3DENNN4');
+      card = await payments.card();
+      await card.attach('#card-container');
+    }
+
+    async function tokenizeCard() {
+      const result = await card.tokenize();
+      if (result.status === 'OK') return result.token;
+      throw new Error(result.errors.map(e=>e.message).join(', '));
+    }
+
+    async function completeOrder() {
+      const btn = document.querySelector('#checkoutForm .checkout-btn');
+      const origText = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = 'Processing...';
+      if (fulfillment === 'delivery' && !addressValid) {
+        document.getElementById('addrError').style.display = 'block';
+        btn.disabled = false;
+        btn.innerText = origText;
+        return;
+      }
+      try {
+        const token = await tokenizeCard();
+        const customer = {
+          name: document.getElementById('custName').value.trim(),
+          phone: document.getElementById('custPhone').value.trim(),
+          email: document.getElementById('custEmail').value.trim(),
+          address: fulfillment === 'delivery' ? document.getElementById('custAddress').value.trim() : '',
+          fulfillment
+        };
+        let subtotal = Object.keys(cart).reduce((sum,id) => sum + products.find(x=>x._id===id).price * cart[id], 0);
+        const total = fulfillment === 'delivery' ? subtotal + fee :subtotal;
+        const response = await fetch('https://moes-jerky-backend3.onrender.com/payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,amount:total,cart:Object.keys(cart).map(id=>({id,name:products.find(x=>x._id===id).name,quantity:cart[id]})),customer})});
+        const data = await response.json();
+        if(!data.success) throw new Error(data.error || 'Payment failed');
+        window.location.href = `/thank-you.html?orderId=${data.payment.id}`;
+      } catch(err) {
+        document.getElementById('card-errors').innerText = err.message;
+        btn.disabled = false;
+        btn.innerText = origText;
+      }
+    }
+
+    window.addEventListener('load', () => {
+      loadProducts();
+      initAddressAutocomplete();
+      initializeSquare();
+    });
+  </script>
+</body>
+</html>

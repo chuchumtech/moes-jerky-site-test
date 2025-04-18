@@ -1,0 +1,159 @@
+
+/* Basic CSS reused for layout and formatting */
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background: #f8f8f8;
+  display: flex;
+  flex-wrap: wrap;
+  overflow-x: hidden;
+}
+header {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background: #8b0000;
+  color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 999;
+}
+header h1 { margin: 0; font-size: 1.5rem; }
+.cart-icon { position: relative; cursor: pointer; }
+.cart-icon::before { content: "🛒"; font-size: 1.5rem; }
+.cart-count {
+  position: absolute; top: -8px; right: -10px;
+  background: white; color: #8b0000;
+  font-size: 0.8rem; font-weight: bold;
+  border-radius: 50%; width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+main { width: 100%; display: flex; justify-content: center; }
+.product-grid {
+  width: 75%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  padding: 1rem;
+  align-content: start;
+}
+aside {
+  width: 25%;
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  background: white;
+  padding: 1rem;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.77,0,0.175,1);
+  overflow-y: auto;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+aside.open { transform: translateX(0); }
+
+/* Hide cart content when in checkout mode */
+#cartSidebar.checkout-mode > h2,
+#cartSidebar.checkout-mode > #cartItems,
+#cartSidebar.checkout-mode > #cartSubtotal,
+#cartSidebar.checkout-mode > .delivery-option,
+#cartSidebar.checkout-mode > #cartTotal,
+#cartSidebar.checkout-mode > .checkout-btn {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: max-height 0.4s, opacity 0.4s;
+}
+#cartSidebar:not(.checkout-mode) > #checkoutForm {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: max-height 0.4s, opacity 0.4s;
+}
+#cartSidebar.checkout-mode > #checkoutForm {
+  display: block;
+  max-height: 1000px;
+  opacity: 1;
+  overflow: visible;
+  pointer-events: auto;
+  transition: max-height 0.4s, opacity 0.4s;
+}
+.product {
+  background: white;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.product h3 { margin: 0.3em 0 0.2em; font-size: 1em; }
+.product p { margin: 0 0 0.5em; font-size: 0.95em; }
+.btn, .btn-qty {
+  padding: 6px 10px;
+  background: #8b0000;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.qty-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.qty-number {
+  width: 30px;
+  text-align: center;
+  font-weight: bold;
+}
+.cart-item {
+  font-size: 0.95em;
+  margin-bottom: 10px;
+}
+.cart-total {
+  font-weight: bold;
+  margin-top: 12px;
+}
+.checkout-btn, .proceed-btn, .back-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: #8b0000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#checkoutForm {
+  display: none;
+  margin-top: 1rem;
+  animation: fadeIn 0.3s ease forwards;
+}
+#checkoutForm.show {
+  display: block;
+}
+#checkoutForm input, #checkoutForm textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  color: #888;
+  font-size: 20px;
+  border: none;
+  cursor: pointer;
+}
