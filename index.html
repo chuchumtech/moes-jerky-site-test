@@ -27,22 +27,24 @@
       <div class="cart-total" id="cartTotal">Total: $0.00</div>
       <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
       <div id="checkoutForm">
-        <button class="back-btn" onclick="showCart()">← Back to Cart</button>
-        <h3>Delivery / Pickup Details</h3>
-        <input type="text" id="custName" placeholder="Name" required />
-        <input type="tel" id="custPhone" placeholder="Phone" required />
-        <input type="email" id="custEmail" placeholder="Email" required />
-        <input type="text" id="custAddress" placeholder="Address (if delivery)" style="display:none; margin-top:8px;" required />
-        <div id="deliveryDateWrap" style="margin: 1rem 0;">
-  <label for="deliveryDateSelect" style="font-weight:600;">Choose Delivery/Pickup Date:</label>
-  <select id="deliveryDateSelect" required style="margin-left: 0.5rem;"></select>
-  <span id="noDatesMsg" style="color: #a83232; font-size: 0.98em; display:none; margin-left:0.5rem;"></span>
+  <button class="back-btn" onclick="showCart()">← Back to Cart</button>
+  <h3 style="text-align:center; margin-bottom:1.5rem;">Delivery / Pickup Details</h3>
+  <div class="checkout-fields">
+    <input type="text" id="custName" placeholder="Name" required class="modern-input" />
+    <input type="tel" id="custPhone" placeholder="Phone" required class="modern-input" />
+    <input type="email" id="custEmail" placeholder="Email" required class="modern-input" />
+    <input type="text" id="custAddress" placeholder="Address (if delivery)" style="display:none; margin-top:8px;" required class="modern-input" />
+    <div id="deliveryDateWrap" class="centered-date-wrap">
+      <label for="deliveryDateSelect" class="date-label">Choose Delivery/Pickup Date:</label>
+      <select id="deliveryDateSelect" required class="modern-input date-select"></select>
+      <span id="noDatesMsg" style="color: #a83232; font-size: 0.98em; display:none; margin-left:0.5rem;"></span>
+    </div>
+    <div id="addrError" style="color:red; font-size:0.9em; display:none; text-align:center;">Please select a valid address from the suggestions.</div>
+    <div id="card-container" style="margin-top:1rem;"></div>
+    <div id="card-errors" style="color:red; font-size:0.9em; margin-top:0.5rem; text-align:center;"></div>
+    <button class="checkout-btn" onclick="completeOrder()">Complete Order</button>
+  </div>
 </div>
-        <div id="addrError" style="color:red; font-size:0.9em; display:none;">Please select a valid address from the suggestions.</div>
-        <div id="card-container" style="margin-top:1rem;"></div>
-        <div id="card-errors" style="color:red; font-size:0.9em; margin-top:0.5rem;"></div>
-        <button class="checkout-btn" onclick="completeOrder()">Complete Order</button>
-      </div>
     </aside>
   </main>
 

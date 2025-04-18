@@ -279,6 +279,102 @@ aside.open { transform: translateX(0); }
   padding-left: 8px;
   padding-right: 8px;
 }
+
+.checkout-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.05rem;
+  margin-top: 0.5rem;
+}
+
+.modern-input {
+  width: 95%;
+  padding: 0.75rem 1.1rem;
+  border-radius: 10px;
+  border: 1.5px solid #d0d0d0;
+  font-size: 1.08em;
+  background: #fafbfc;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  margin-bottom: 0.1rem;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.modern-input:focus {
+  border: 1.5px solid #8b0000;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(139,0,0,0.10);
+}
+
+.centered-date-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 0.3rem 0 0.7rem 0;
+}
+.date-label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  text-align: center;
+}
+.date-select {
+  width: 70%;
+  margin: 0 auto 0.2rem auto;
+  text-align: center;
+  font-size: 1.07em;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #d0d0d0;
+  background: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.date-select:focus {
+  border: 1.5px solid #8b0000;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(139,0,0,0.10);
+}
+
+.date-input {
+  padding: 0.75rem 1.1rem;
+  border-radius: 10px;
+  border: 1.5px solid #d0d0d0;
+  font-size: 1.08em;
+  background: #fafbfc;
+  transition: border 0.2s, box-shadow 0.2s;
+  margin-right: 1rem;
+  width: 200px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.date-input:focus {
+  border: 1.5px solid #8b0000;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(139,0,0,0.10);
+}
+
+.date-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.modern-btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1.08em;
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background var(--transition-time), box-shadow 0.2s;
+}
+.modern-btn:hover {
+  background: #6e0000;
+  box-shadow: 0 2px 8px rgba(139,0,0,0.10);
+}
+
 #checkoutForm.show {
   display: block;
 }
@@ -317,6 +413,55 @@ input.product-input:focus {
   border: 1.5px solid #8b0000;
   outline: none;
   box-shadow: 0 2px 8px rgba(139,0,0,0.10);
+}
+
+/* Modern input for admin forms (users, etc.) */
+.modern-input {
+  width: 95%;
+  padding: 0.75rem 1.1rem;
+  border-radius: 10px;
+  border: 1.5px solid #d0d0d0;
+  font-size: 1.08em;
+  background: #fafbfc;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  margin-bottom: 0.5rem;
+  margin-top: 0.1rem;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.modern-input:focus {
+  border: 1.5px solid #8b0000;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(139,0,0,0.10);
+}
+
+/* Table cell input alignment for users table */
+#usersTable input.modern-input {
+  width: 90%;
+  margin: 0.15rem 0;
+}
+
+/* Modernize buttons in admin portal */
+.add-btn, .save-btn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background var(--transition-time), box-shadow 0.2s;
+  margin-right: 0.8rem;
+}
+.add-btn:hover, .save-btn:hover {
+  background: #6e0000;
+  box-shadow: 0 2px 8px rgba(139,0,0,0.10);
+}
+
+#usersTable .modern-input[type="password"] {
+  letter-spacing: 0.2em;
 }
 
 .close-btn {

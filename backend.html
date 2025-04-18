@@ -110,37 +110,38 @@ input.product-input:focus {
       <!-- Products -->
       <div id="productsTab" class="tab-content">
         <h2>Product Management</h2>
-      </div>
-      <!-- Delivery Dates -->
-      <div id="datesTab" class="tab-content">
-        <h2>Delivery Dates Management</h2>
-        <div style="margin-bottom:1rem;">
-          <input type="date" id="newDateInput" class="date-input" />
-          <button class="add-date-btn" onclick="addDeliveryDate()">Add Date</button>
-        </div>
-        <table id="datesTable">
-          <tr><th>Date</th><th>Actions</th></tr>
-        </table>
-      </div>
         <table id="productsTable">
           <tr><th>Name</th><th>Price</th><th>Actions</th></tr>
         </table>
         <button class="add-btn" onclick="addProduct()">+ Add New Item</button>
         <button class="save-btn" onclick="saveProducts()">Save Changes</button>
       </div>
+      <!-- Delivery Dates -->
+      <div id="datesTab" class="tab-content">
+        <h2>Delivery Dates Management</h2>
+        <div class="date-picker-row">
+  <input type="date" id="newDateInput" class="modern-input date-input" />
+  <button class="modern-btn add-date-btn" onclick="addDeliveryDate()">Add Date</button>
+</div>
+        <table id="datesTable">
+          <tr><th>Date</th><th>Actions</th></tr>
+        </table>
+      </div>
+      </div>
       <!-- Users -->
       <div id="usersTab" class="tab-content">
         <h2>User Management</h2>
         <table id="usersTable">
-          <tr><th>Name</th><th>Code</th><th>Actions</th></tr>
-        </table>
+  <tr><th>Name</th><th>Code</th><th>Actions</th></tr>
+  <tbody id="usersTableBody"></tbody>
+</table>
         <div id="addUserForm" style="display:none; margin-top:1rem;">
-          <input id="newUserName" class="user-input" type="text" placeholder="Name" style="margin-bottom:0.5rem;" />
-          <input id="newUserCode" class="user-input" type="text" placeholder="6-digit Code" style="margin-bottom:0.5rem;" />
-          <button class="save-btn" onclick="addUser()">Save User</button>
-        </div>
-        <button class="add-btn" id="showAddUserBtn" onclick="showAddUserForm()">Add User</button>
-        <button class="save-btn" onclick="saveUsers()">Save All Users</button>
+  <input id="newUserName" class="modern-input" type="text" placeholder="Name" style="margin-bottom:0.5rem;" />
+  <input id="newUserCode" class="modern-input" type="password" placeholder="6-digit Code" style="margin-bottom:0.5rem;" />
+  <button class="save-btn" onclick="addUser()">Save User</button>
+</div>
+<button class="add-btn" id="showAddUserBtn" onclick="showAddUserForm()">Add User</button>
+<button class="save-btn" onclick="saveUsers()">Save All Users</button>
       </div>
       <!-- Analytics -->
       <div id="analyticsTab" class="tab-content">
@@ -355,10 +356,13 @@ async function addDeliveryDate() {
   const input = document.getElementById('newDateInput');
   const val = input.value;
   if (!val) return alert('Please select a date');
+  // Fix timezone: send as ISO string at local midnight
+  const localDate = new Date(val + 'T00:00:00');
+  const isoDate = localDate.toISOString();
   const res = await fetch('https://moes-jerky-backend3.onrender.com/delivery-dates', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ date: val })
+    body: JSON.stringify({ date: isoDate })
   });
   if (res.ok) {
     input.value = '';
