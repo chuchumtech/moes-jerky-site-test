@@ -107,31 +107,37 @@
     }
 
     function renderCart() {
-      const itemsDiv = document.getElementById('cartItems');
-      itemsDiv.innerHTML = '';
-      let subtotal = 0;
-      Object.keys(cart).forEach(id => {
-        const prod = products.find(p => p._id === id);
-        const qty = cart[id];
-        const lineTotal = prod.price * qty;
-        subtotal += lineTotal;
-        const line = document.createElement('div');
-        line.className = 'cart-item';
-        line.innerHTML = `
-          <span>${prod.name} x${qty}</span>
-          <span>$${lineTotal.toFixed(2)}</span>
-          <div class="qty-control">
-            <button class="btn-qty" onclick="updateCartQty('${id}', -1)">-</button>
-            <span class="qty-number">${qty}</span>
-            <button class="btn-qty" onclick="updateCartQty('${id}', 1)">+</button>
-          </div>
-        `;
-        itemsDiv.appendChild(line);
-      });
-      document.getElementById('cartSubtotal').textContent = `Subtotal: $${subtotal.toFixed(2)}`;
-      updateTotal(subtotal);
-      document.getElementById('cartCount').textContent = Object.values(cart).reduce((a,b)=>a+b,0);
-    }
+  const itemsDiv = document.getElementById('cartItems');
+  itemsDiv.innerHTML = '';
+  let subtotal = 0;
+  Object.keys(cart).forEach(id => {
+    const prod = products.find(p => p._id === id);
+    const qty = cart[id];
+    const lineTotal = prod.price * qty;
+    subtotal += lineTotal;
+    const line = document.createElement('div');
+    line.className = 'cart-item';
+    line.innerHTML = `
+      <span>${prod.name} x${qty}</span>
+      <span>$${lineTotal.toFixed(2)}</span>
+      <div class="qty-control">
+        <button class="btn-qty" onclick="updateCartQty('${id}', -1)">-</button>
+        <span class="qty-number">${qty}</span>
+        <button class="btn-qty" onclick="updateCartQty('${id}', 1)">+</button>
+        <button class="cart-remove-btn" onclick="removeCartItem('${id}')" title="Remove item">&#128465;</button>
+      </div>
+    `;
+    itemsDiv.appendChild(line);
+  });
+  document.getElementById('cartSubtotal').textContent = `Subtotal: $${subtotal.toFixed(2)}`;
+  updateTotal(subtotal);
+  document.getElementById('cartCount').textContent = Object.values(cart).reduce((a,b)=>a+b,0);
+}
+
+function removeCartItem(id) {
+  delete cart[id];
+  renderCart();
+}
 
     function updateFulfillment() {
       fulfillment = document.querySelector('input[name="fulfillment"]:checked').value;

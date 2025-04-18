@@ -164,6 +164,21 @@ aside.open { transform: translateX(0); }
   gap: 12px;
   width: 100%;
 }
+.cart-remove-btn {
+  background: transparent;
+  border: none;
+  color: #8b0000;
+  font-size: 1.3em;
+  cursor: pointer;
+  margin-left: 8px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+.cart-remove-btn:hover {
+  color: #a83232;
+  background: #fbeaec;
+}
 .product .qty-control {
   margin-top: 10px;
   width: 100%;
