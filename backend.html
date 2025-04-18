@@ -89,19 +89,32 @@
 
   <script>
     let users=[], items=[], orders=[], currentUser=null;
-    window.onload = function() {
-      const boxes = document.querySelectorAll('.code-box');
-      boxes[0].focus();
-      boxes.forEach((b,i) => {
-        b.addEventListener('input', () => {
-          if (b.value && i < boxes.length-1) boxes[i+1].focus();
-          if (Array.from(boxes).every(x=>x.value)) checkCode();
-        });
-        b.addEventListener('keydown', e => {
-          if (e.key==='Backspace' && !b.value && i>0) boxes[i-1].focus();
-        });
-      });
-    };
+    window.addEventListener('DOMContentLoaded', () => {
+  const boxes = document.querySelectorAll('.code-box');
+  if (boxes.length === 0) return;
+  boxes[0].focus();
+  boxes.forEach((box, idx) => {
+    box.addEventListener('input', (e) => {
+      const val = e.target.value;
+      // Allow only single digit
+      if (!/^[0-9]$/.test(val)) {
+        box.value = '';
+        return;
+      }
+      // Auto-advance
+      if (idx < boxes.length - 1) boxes[idx + 1].focus();
+      // If all filled, check code
+      if ([...boxes].every(b => b.value.length === 1)) {
+        checkCode();
+      }
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !box.value && idx > 0) {
+        boxes[idx - 1].focus();
+      }
+    });
+  });
+});
     async function checkCode(){
       const code = Array.from(document.querySelectorAll('.code-box')).map(x=>x.value).join('');
       if (code==='258022') { currentUser={name:'Super Admin'}; showAdmin(); return; }
