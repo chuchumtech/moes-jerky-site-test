@@ -1,21 +1,23 @@
 // thankyou.js: Display order details on the thank you page
 window.addEventListener('DOMContentLoaded', async () => {
-  // Parse orderId from URL
+  // Parse orderNumber from URL
   const params = new URLSearchParams(window.location.search);
-  const orderId = params.get('orderId');
+  const orderNumber = params.get('orderNumber');
   const detailsDiv = document.getElementById('orderDetails');
-  if (!orderId) {
-    detailsDiv.innerHTML = '<p style="color:#a83232;">No order ID found.</p>';
+  if (!orderNumber) {
+    detailsDiv.innerHTML = '<p style="color:#a83232;">No order number found.</p>';
     return;
   }
-  // Fetch order details from backend (customize endpoint as needed)
+  // Fetch order details from backend by orderNumber
   try {
-    const res = await fetch(`https://moes-jerky-backend3.onrender.com/order/${orderId}`);
+    const res = await fetch(`https://moes-jerky-backend3.onrender.com/orders`);
     if (!res.ok) throw new Error('Order not found');
-    const order = await res.json();
+    const orders = await res.json();
+    const order = orders.find(o => o.orderNumber === Number(orderNumber));
+    if (!order) throw new Error('Order not found');
     detailsDiv.innerHTML = `
       <div class="order-summary">
-        <h2>Order #${orderId}</h2>
+        <h2>Order #${orderNumber}</h2>
         <div class="order-section">
           <h3>Customer</h3>
           <p><strong>Name:</strong> ${order.customer?.name || ''}<br>
@@ -33,8 +35,8 @@ window.addEventListener('DOMContentLoaded', async () => {
           <p><strong>$${order.amount?.toFixed(2) || '0.00'}</strong></p>
         </div>
         <div class="order-section">
-          <h3>Status</h3>
-          <p>${order.status || 'Processing'}</p>
+          <h3>Delivery Type</h3>
+          <p>${order.customer?.fulfillment === 'delivery' ? 'Delivery' : 'Pickup'}</p>
         </div>
       </div>
     `;

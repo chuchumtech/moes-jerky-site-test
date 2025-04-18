@@ -219,7 +219,7 @@ function removeCartItem(id) {
         const response = await fetch('https://moes-jerky-backend3.onrender.com/payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,amount:total,cart:Object.keys(cart).map(id=>({id,name:products.find(x=>x._id===id).name,quantity:cart[id]})),customer})});
         const data = await response.json();
         if(!data.success) throw new Error(data.error || 'Payment failed');
-        window.location.href = `/thankyou.html?orderId=${data.payment.id}`;
+        window.location.href = `/thankyou.html?orderNumber=${data.orderNumber}`;
       } catch(err) {
         document.getElementById('card-errors').innerText = err.message;
         btn.disabled = false;
