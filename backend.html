@@ -99,23 +99,23 @@ input.product-input:focus {
       </div>
       <div id="loggedInUser" style="margin-bottom: 2rem; font-size: 0.9rem; font-style: italic;"></div>
       <div class="sidebar-content">
-        <div class="sidebar-link" onclick="switchTab('orders')">
+        <div class="sidebar-link" data-tab="orders" onclick="switchTab('orders')">
           <span class="sidebar-icon"><i class="fas fa-receipt"></i></span>
           <span class="sidebar-text">Orders</span>
         </div>
-        <div class="sidebar-link" onclick="switchTab('products')">
+        <div class="sidebar-link" data-tab="products" onclick="switchTab('products')">
           <span class="sidebar-icon"><i class="fas fa-box"></i></span>
           <span class="sidebar-text">Products</span>
         </div>
-        <div class="sidebar-link" onclick="switchTab('dates')">
+        <div class="sidebar-link" data-tab="dates" onclick="switchTab('dates')">
           <span class="sidebar-icon"><i class="fas fa-truck"></i></span>
           <span class="sidebar-text">Delivery Dates</span>
         </div>
-        <div class="sidebar-link" onclick="switchTab('users')">
+        <div class="sidebar-link" data-tab="users" onclick="switchTab('users')">
           <span class="sidebar-icon"><i class="fas fa-users"></i></span>
           <span class="sidebar-text">Users</span>
         </div>
-        <div class="sidebar-link" onclick="switchTab('analytics')">
+        <div class="sidebar-link" data-tab="analytics" onclick="switchTab('analytics')">
           <span class="sidebar-icon"><i class="fas fa-chart-line"></i></span>
           <span class="sidebar-text">Analytics</span>
         </div>
@@ -271,8 +271,8 @@ input.product-input:focus {
     function switchTab(tab) {
       document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
       document.getElementById(tab + 'Tab').classList.add('active');
-      document.querySelectorAll('.sidebar .tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector(`.sidebar .tab-btn[data-tab="${tab}"]`).classList.add('active');
+      document.querySelectorAll('.sidebar .sidebar-link').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.sidebar .sidebar-link[data-tab="${tab}"]`).classList.add('active');
       if (tab === 'orders') renderOrders();
       if (tab === 'products') renderProducts();
       if (tab === 'users') renderUsers();
