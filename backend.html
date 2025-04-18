@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Moe's Jerky Admin</title>
   <style>
-    body { font-family: sans-serif; margin: 0; display: flex; }
-    #login { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100%; }
-    #admin { display: none; width: 100%; height: 100vh; }
+    body { margin: 0; font-family: sans-serif; }
+    #login { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     .code-box { width: 40px; height: 50px; font-size: 24px; text-align: center; margin: 0 5px; }
     #login-error { color: red; margin-top: 10px; }
-    .sidebar { background-color: #333; color: white; width: 200px; padding: 1rem; height: 100vh; position: fixed; top: 0; left: 0; transition: width 0.3s; overflow: hidden; }
+    #admin { display: none; height: 100vh; }
+    .sidebar { position: fixed; top: 0; left: 0; width: 200px; height: 100%; background: #333; color: white; padding: 1rem; box-sizing: border-box; transition: width 0.3s; overflow: hidden; }
     .sidebar.collapsed { width: 50px; }
-    .sidebar button { display: block; width: 100%; background: none; border: none; color: white; text-align: left; padding: 10px; cursor: pointer; white-space: nowrap; }
-    .sidebar button.active { background-color: #8b0000; }
-    .toggle-btn { background: none; color: white; border: none; cursor: pointer; margin-bottom: 1rem; font-size: 20px; }
-    .content { margin-left: 200px; padding: 2rem; height: 100vh; overflow-y: auto; }
-    .content.orders .tab-content, .content.products .tab-content, .content.users .tab-content, .content.analytics .tab-content { display: none; }
+    .sidebar .toggle-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-bottom: 1rem; }
+    .sidebar .tab-btn { display: block; width: 100%; background: none; border: none; color: white; text-align: left; padding: 10px; cursor: pointer; box-sizing: border-box; }
+    .sidebar .tab-btn.active { background: #8b0000; }
+    .content { margin-left: 200px; padding: 2rem; box-sizing: border-box; height: 100vh; overflow-y: auto; transition: margin-left 0.3s; }
+    .sidebar.collapsed + .content { margin-left: 50px; }
+    .tab-content { display: none; }
     .tab-content.active { display: block; }
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f4f4f4; }
-    input[type="text"], input[type="number"], select { padding: 6px; width: calc(100% - 12px); box-sizing: border-box; }
+    th { background: #f4f4f4; }
+    input[type="text"], input[type="number"], select { padding: 6px; width: 100%; box-sizing: border-box; }
     .add-btn, .save-btn, .export-btn { margin-top: 1rem; padding: 8px 12px; background: #8b0000; color: white; border: none; cursor: pointer; }
   </style>
 </head>
@@ -28,7 +30,7 @@
   <!-- Login Screen -->
   <div id="login">
     <h2>Enter Admin Code</h2>
-    <div style="display: flex;">
+    <div style="display:flex;">
       <input maxlength="1" class="code-box" />
       <input maxlength="1" class="code-box" />
       <input maxlength="1" class="code-box" />
@@ -44,39 +46,32 @@
     <div class="sidebar" id="sidebar">
       <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
       <div id="loggedInUser" style="margin-bottom:1rem;"></div>
-      <button onclick="switchTab('orders')">Orders</button>
-      <button onclick="switchTab('products')">Products</button>
-      <button onclick="switchTab('users')">Users</button>
-      <button onclick="switchTab('analytics')">Analytics</button>
+      <button class="tab-btn" data-tab="orders" onclick="switchTab('orders')">Orders</button>
+      <button class="tab-btn" data-tab="products" onclick="switchTab('products')">Products</button>
+      <button class="tab-btn" data-tab="users" onclick="switchTab('users')">Users</button>
+      <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">Analytics</button>
     </div>
     <div class="content">
-      <!-- Orders Tab -->
       <div id="ordersTab" class="tab-content">
         <h2>Orders Management</h2>
-        <input id="orderSearch" placeholder="Search orders by name/email/phone" oninput="renderOrders()" style="width:100%; margin-bottom:10px;"/>
+        <input id="orderSearch" placeholder="Search orders by name/email/phone" oninput="renderOrders()" />
         <button class="export-btn" onclick="exportOrders()">Export CSV</button>
         <table id="ordersTable"><tr><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Actions</th></tr></table>
       </div>
-
-      <!-- Products Tab -->
       <div id="productsTab" class="tab-content">
         <h2>Product Management</h2>
         <table id="productsTable"><tr><th>Name</th><th>Price</th><th>Actions</th></tr></table>
         <button class="add-btn" onclick="addProduct()">+ Add New Item</button>
         <button class="save-btn" onclick="saveProducts()">Save Changes</button>
       </div>
-
-      <!-- Users Tab -->
       <div id="usersTab" class="tab-content">
         <h2>User Management</h2>
         <table id="usersTable"><tr><th>Name</th><th>Code</th><th>Actions</th></tr></table>
-        <input id="newUserName" placeholder="Name" style="margin-top:10px;"/>
-        <input id="newUserCode" placeholder="6-digit Code" style="margin-top:10px;"/>
+        <input id="newUserName" placeholder="Name" style="margin-top:10px;" />
+        <input id="newUserCode" placeholder="6-digit Code" style="margin-top:10px;" />
         <button class="add-btn" onclick="addUser()">Add User</button>
         <button class="save-btn" onclick="saveUsers()">Save All Users</button>
       </div>
-
-      <!-- Analytics Tab -->
       <div id="analyticsTab" class="tab-content">
         <h2>Analytics Dashboard</h2>
         <div id="stats">
@@ -95,33 +90,24 @@
   <script>
     let users=[], items=[], orders=[], currentUser=null;
     window.onload = function() {
-      // Setup login fields
       const boxes = document.querySelectorAll('.code-box');
       boxes[0].focus();
       boxes.forEach((b,i) => {
         b.addEventListener('input', () => {
-          if(b.value && i<boxes.length-1) boxes[i+1].focus();
-          if(Array.from(boxes).every(x=>x.value)) checkCode();
+          if (b.value && i < boxes.length-1) boxes[i+1].focus();
+          if (Array.from(boxes).every(x=>x.value)) checkCode();
         });
         b.addEventListener('keydown', e => {
-          if(e.key==='Backspace' && !b.value && i>0) boxes[i-1].focus();
+          if (e.key==='Backspace' && !b.value && i>0) boxes[i-1].focus();
         });
       });
     };
     async function checkCode(){
       const code = Array.from(document.querySelectorAll('.code-box')).map(x=>x.value).join('');
-      // Super Admin bypass
-      if(code==='258022'){
-        currentUser={name:'Super Admin'};
-        showAdmin();
-        return;
-      }
-      // Validate dynamically
-      const res=await fetch('https://moes-jerky-backend3.onrender.com/users');
-      users=await res.json();
+      if (code==='258022') { currentUser={name:'Super Admin'}; showAdmin(); return; }
+      const res=await fetch('https://moes-jerky-backend3.onrender.com/users'); users=await res.json();
       const u=users.find(x=>x.code===code);
-      if(u){currentUser=u; showAdmin();}
-      else document.getElementById('login-error').innerText='Invalid code';
+      if (u) { currentUser=u; showAdmin(); } else { document.getElementById('login-error').innerText='Invalid code'; }
     }
     function showAdmin(){
       document.getElementById('login').style.display='none';
@@ -129,41 +115,21 @@
       document.getElementById('loggedInUser').innerText=`Logged in as: ${currentUser.name}`;
       switchTab('orders');
     }
-    function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
-    function switchTab(tab){
+    function toggleSidebar(){
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+    function switchTab(tab) {
       document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
       document.getElementById(tab+'Tab').classList.add('active');
-      document.querySelectorAll('.sidebar button').forEach(b=>b.classList.remove('active'));
-      event.target.classList.add('active');
-      if(tab==='orders') renderOrders();
-      if(tab==='products') renderProducts();
-      if(tab==='users') renderUsers();
-      if(tab==='analytics') renderAnalytics();
+      document.querySelectorAll('.sidebar .tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelector(`.sidebar .tab-btn[data-tab="${tab}"]`).classList.add('active');
+      if (tab==='orders') renderOrders();
+      if (tab==='products') renderProducts();
+      if (tab==='users') renderUsers();
+      if (tab==='analytics') renderAnalytics();
     }
-    // Orders
     async function renderOrders(){
       const res=await fetch('https://moes-jerky-backend3.onrender.com/orders'); orders=await res.json();
       const table=document.getElementById('ordersTable'); const s=document.getElementById('orderSearch').value.toLowerCase();
       table.innerHTML='<tr><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Actions</th></tr>';
-      orders.filter(o=>{const c=o.customer||{};return c.name.toLowerCase().includes(s)||c.email.toLowerCase().includes(s)||c.phone.includes(s)}).forEach(o=>{
-        table.innerHTML+=`<tr><td>${o.customer.name}<br>${o.customer.email}<br>${o.customer.phone}<br>${o.customer.address}</td><td>${o.cart.map(i=>i.name+' x'+i.quantity).join(', ')}</td><td>$${o.amount.toFixed(2)}</td><td><select onchange="updateOrderStatus('${o._id}',this.value)"><option ${o.status==='Processing'?'selected':''}>Processing</option><option ${o.status==='Shipped'?'selected':''}>Shipped</option><option ${o.status==='Delivered'?'selected':''}>Delivered</option></select></td><td><button onclick="deleteOrder('${o._id}')">Delete</button></td></tr>`;
-      });
-    }
-    async function updateOrderStatus(id,status){await fetch(`https://moes-jerky-backend3.onrender.com/orders/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});renderOrders();}
-    async function deleteOrder(id){if(confirm('Delete this order?')){await fetch(`https://moes-jerky-backend3.onrender.com/orders/${id}`,{method:'DELETE'});renderOrders();}}
-    function exportOrders(){let csv='Name,Email,Phone,Address,Items,Amount,Status\n';orders.forEach(o=>{const c=o.customer;csv+=`"${c.name}","${c.email}","${c.phone}","${c.address}","${o.cart.map(i=>i.name+' x'+i.quantity).join(' | ')}","$${o.amount.toFixed(2)}","${o.status}"\n`;});const b=new Blob([csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='orders.csv';a.click();}
-    // Products
-    async function renderProducts(){const res=await fetch('https://moes-jerky-backend3.onrender.com/items');items=await res.json();const tbl=document.getElementById('productsTable');tbl.innerHTML='<tr><th>Name</th><th>Price</th><th>Actions</th></tr>';items.forEach((it,i)=>{tbl.innerHTML+=`<tr><td><input value="${it.name}" onchange="items[${i}].name=this.value"/></td><td><input type="number" value="${it.price}" onchange="items[${i}].price=parseFloat(this.value)"/></td><td><button onclick="deleteProduct(${i})">Delete</button></td></tr>`;});}
-    function addProduct(){items.push({name:'',price:0});renderProducts();}
-    async function deleteProduct(i){items.splice(i,1);renderProducts();}
-    async function saveProducts(){await fetch('https://moes-jerky-backend3.onrender.com/items',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(items)});renderProducts();}
-    // Users
-    async function renderUsers(){const res=await fetch('https://moes-jerky-backend3.onrender.com/users');users=await res.json();const tbl=document.getElementById('usersTable');tbl.innerHTML='<tr><th>Name</th><th>Code</th><th>Actions</th></tr>';users.forEach((u,i)=>{tbl.innerHTML+=`<tr><td><input value="${u.name}" onchange="users[${i}].name=this.value"/></td><td><input type="password" value="${u.code}" onchange="users[${i}].code=this.value"/></td><td><button onclick="deleteUser(${i})">Delete</button></td></tr>`;});}
-    async function addUser(){const n=document.getElementById('newUserName').value,c=document.getElementById('newUserCode').value;if(n&&c.length===6&&!isNaN(c)){users.push({name:n,code:c});renderUsers();document.getElementById('newUserName').value='';document.getElementById('newUserCode').value='';saveUsers();}else alert('Enter valid 6-digit code');}
-    async function deleteUser(i){if(confirm('Delete this user?')){users.splice(i,1);renderUsers();saveUsers();}}
-    async function saveUsers(){await fetch('https://moes-jerky-backend3.onrender.com/users/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(users)});renderUsers();}
-    // Analytics
-    async function renderAnalytics(){const res=await fetch('https://moes-jerky-backend3.onrender.com/orders');orders=await res.json();const total=orders.reduce((s,o)=>s+o.amount,0),count=orders.length,avg=count?total/count:0;document.getElementById('totalSales').innerText=`$${total.toFixed(2)}`;document.getElementById('orderCount').innerText=count;document.getElementById('avgOrder').innerText=`$${avg.toFixed(2)}`;const pc={};orders.forEach(o=>o.cart.forEach(i=>pc[i.name]=(pc[i.name]||0)+i.quantity));const top=Object.entries(pc).sort((a,b)=>b[1]-a[1]).slice(0,5),tp=document.getElementById('topProducts');tp.innerHTML='';top.forEach(([nm,q])=>{const li=document.createElement('li');li.innerText=`${nm}: ${q}`;tp.appendChild(li);});const cm={};orders.forEach(o=>{const nm=o.customer.name;cm[nm]=(cm[nm]||0)+o.amount});const cs=document.getElementById('customerStats');cs.innerHTML='';Object.entries(cm).forEach(([nm,val])=>{const li=document.createElement('li');li.innerText=`${nm}: $${val.toFixed(2)}`;cs.appendChild(li);});}
-  </script>
-</body>
-</html>
+      orders.filter(o=>{const c=o.customer; return c.name.toLowerCase().
