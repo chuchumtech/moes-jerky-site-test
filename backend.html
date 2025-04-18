@@ -103,9 +103,12 @@
         <table id="usersTable">
           <tr><th>Name</th><th>Code</th><th>Actions</th></tr>
         </table>
-        <input id="newUserName" type="text" placeholder="Name" />
-        <input id="newUserCode" type="text" placeholder="6-digit Code" style="margin-top:0.5rem;" />
-        <button class="add-btn" onclick="addUser()">Add User</button>
+        <div id="addUserForm" style="display:none; margin-top:1rem;">
+          <input id="newUserName" class="user-input" type="text" placeholder="Name" style="margin-bottom:0.5rem;" />
+          <input id="newUserCode" class="user-input" type="text" placeholder="6-digit Code" style="margin-bottom:0.5rem;" />
+          <button class="save-btn" onclick="addUser()">Save User</button>
+        </div>
+        <button class="add-btn" id="showAddUserBtn" onclick="showAddUserForm()">Add User</button>
         <button class="save-btn" onclick="saveUsers()">Save All Users</button>
       </div>
       <!-- Analytics -->
@@ -220,16 +223,60 @@
     async function deleteOrder(id) { if (confirm('Delete this order?')) { await fetch(`https://moes-jerky-backend3.onrender.com/orders/${id}`, { method: 'DELETE' }); renderOrders(); }}
     function exportOrders() { let csv='Name,Email,Phone,Address,Items,Amount,Status\n'; orders.forEach(o=>{ const c=o.customer; csv+=`"${c.name}","${c.email}","${c.phone}","${c.address}","${o.cart.map(i=>i.name+' x'+i.quantity).join(' | ')}","$${o.amount.toFixed(2)}","${o.status}"\n`; }); const b=new Blob([csv],{type:'text/csv'}), u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download='orders.csv'; a.click(); }
     // Products
-    async function renderProducts() { const res = await fetch('https://moes-jerky-backend3.onrender.com/items'); items = await res.json(); const tbl = document.getElementById('productsTable'); tbl.innerHTML = '<tr><th>Name</th><th>Price</th><th>Actions</th></tr>'; items.forEach((it,i) => { tbl.innerHTML += `<tr><td><input value="${it.name}" onchange="items[${i}].name=this.value"/></td><td><input type="number" value="${it.price}" onchange="items[${i}].price=parseFloat(this.value)"/></td><td><button onclick="deleteProduct(${i})">Delete</button></td></tr>`; }); }
+    async function renderProducts() { const res = await fetch('https://moes-jerky-backend3.onrender.com/items'); items = await res.json(); const tbl = document.getElementById('productsTable'); tbl.innerHTML = '<tr><th>Name</th><th>Price</th><th>Actions</th></tr>'; items.forEach((it,i) => { tbl.innerHTML += `<tr><td><input class="product-input" value="${it.name}" onchange="items[${i}].name=this.value"/></td><td><input type="number" class="product-input" value="${it.price}" onchange="items[${i}].price=parseFloat(this.value)"/></td><td><button onclick="deleteProduct(${i})">Delete</button></td></tr>`; }); }
     async function addProduct() {
   items.push({ name: '', price: 0 });
   await saveProducts(); // Persist new item
   renderProducts(); // Re-render with updated list
 }
     async function deleteProduct(i) { items.splice(i,1); renderProducts(); }
-    async function saveProducts() { await fetch('https://moes-jerky-backend3.onrender.com/items',{ method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(items) }); renderProducts(); }
+    async function saveProducts() {
+  const btn = document.querySelector('#productsTab .save-btn');
+  const origText = btn.innerText;
+  btn.disabled = true;
+  btn.innerText = 'Processing...';
+  // Remove any previous message
+  let msg = document.getElementById('products-save-msg');
+  if (msg) msg.remove();
+  try {
+    await fetch('https://moes-jerky-backend3.onrender.com/items', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify(items)
+    });
+    renderProducts();
+    // Show success message
+    msg = document.createElement('span');
+    msg.id = 'products-save-msg';
+    msg.innerText = 'Saved!';
+    msg.style.marginLeft = '12px';
+    msg.style.color = '#0a8a0a';
+    msg.style.fontWeight = 'bold';
+    btn.parentNode.insertBefore(msg, btn.nextSibling);
+    setTimeout(() => { if (msg) msg.remove(); }, 2000);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = origText;
+  }
+}
     // Users
-    async function renderUsers() { const res = await fetch('https://moes-jerky-backend3.onrender.com/users'); users = await res.json(); const tbl = document.getElementById('usersTable'); tbl.innerHTML = '<tr><th>Name</th><th>Code</th><th>Actions</th></tr>'; users.forEach((u,i)=>{ tbl.innerHTML += `<tr><td><input value="${u.name}" onchange="users[${i}].name=this.value"/></td><td><input type="password" value="${u.code}" onchange="users[${i}].code=this.value"/></td><td><button onclick="deleteUser(${i})">Delete</button></td></tr>`; }); }
+    async function renderUsers() {
+  const res = await fetch('https://moes-jerky-backend3.onrender.com/users');
+  users = await res.json();
+  const tbl = document.getElementById('usersTable');
+  tbl.innerHTML = '<tr><th>Name</th><th>Code</th><th>Actions</th></tr>';
+  users.forEach((u,i)=>{
+    tbl.innerHTML += `<tr><td><input class="user-input" value="${u.name}" onchange="users[${i}].name=this.value"/></td><td><input type="password" class="user-input" value="${u.code}" onchange="users[${i}].code=this.value"/></td><td><button onclick="deleteUser(${i})">Delete</button></td></tr>`;
+  });
+}
+// Show add user form
+function showAddUserForm() {
+  document.getElementById('addUserForm').style.display = 'block';
+  document.getElementById('showAddUserBtn').style.display = 'none';
+  document.getElementById('newUserName').value = '';
+  document.getElementById('newUserCode').value = '';
+  setTimeout(()=>document.getElementById('newUserName').focus(), 100);
+}
     async function addUser() { const n=document.getElementById('newUserName').value, c=document.getElementById('newUserCode').value; if(n&&c.length===6&&!isNaN(c)){ users.push({name:n,code:c}); renderUsers(); document.getElementById('newUserName').value=''; document.getElementById('newUserCode').value=''; saveUsers(); } else alert('Enter valid 6-digit code'); }
     async function deleteUser(i) { if(confirm('Delete this user?')){ users.splice(i,1); renderUsers(); saveUsers(); }}
     async function saveUsers() { await fetch('https://moes-jerky-backend3.onrender.com/users/bulk',{ method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(users) }); renderUsers(); }
