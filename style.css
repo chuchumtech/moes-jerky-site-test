@@ -49,11 +49,42 @@ aside {
   padding: 1rem;
   box-shadow: -2px 0 8px rgba(0,0,0,0.1);
   transform: translateX(100%);
-  transition: transform 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.77,0,0.175,1);
   overflow-y: auto;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 aside.open { transform: translateX(0); }
+
+/* Hide cart content when in checkout mode */
+#cartSidebar.checkout-mode > h2,
+#cartSidebar.checkout-mode > #cartItems,
+#cartSidebar.checkout-mode > #cartSubtotal,
+#cartSidebar.checkout-mode > .delivery-option,
+#cartSidebar.checkout-mode > #cartTotal,
+#cartSidebar.checkout-mode > .checkout-btn {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: max-height 0.4s, opacity 0.4s;
+}
+#cartSidebar:not(.checkout-mode) > #checkoutForm {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: max-height 0.4s, opacity 0.4s;
+}
+#cartSidebar.checkout-mode > #checkoutForm {
+  display: block;
+  max-height: 1000px;
+  opacity: 1;
+  overflow: visible;
+  pointer-events: auto;
+  transition: max-height 0.4s, opacity 0.4s;
+}
 .product {
   background: white;
   border-radius: 8px;
