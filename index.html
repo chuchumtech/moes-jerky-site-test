@@ -33,6 +33,10 @@
         <input type="tel" id="custPhone" placeholder="Phone" required />
         <input type="email" id="custEmail" placeholder="Email" required />
         <input type="text" id="custAddress" placeholder="Address (if delivery)" style="display:none; margin-top:8px;" required />
+        <div id="deliveryDateWrap" style="margin: 1rem 0;">
+          <label for="deliveryDateSelect" style="font-weight:600;">Choose Delivery/Pickup Date:</label>
+          <select id="deliveryDateSelect" required style="margin-left: 0.5rem;"></select>
+        </div>
         <div id="addrError" style="color:red; font-size:0.9em; display:none;">Please select a valid address from the suggestions.</div>
         <div id="card-container" style="margin-top:1rem;"></div>
         <div id="card-errors" style="color:red; font-size:0.9em; margin-top:0.5rem;"></div>
@@ -199,6 +203,14 @@ function removeCartItem(id) {
       const origText = btn.innerText;
       btn.disabled = true;
       btn.innerText = 'Processing...';
+      // Delivery date validation
+      const dateSel = document.getElementById('deliveryDateSelect');
+      if (!dateSel.value) {
+        alert('Please select a delivery/pickup date.');
+        btn.disabled = false;
+        btn.innerText = origText;
+        return;
+      }
       if (fulfillment === 'delivery' && !addressValid) {
         document.getElementById('addrError').style.display = 'block';
         btn.disabled = false;
@@ -227,10 +239,28 @@ function removeCartItem(id) {
       }
     }
 
-    window.addEventListener('load', () => {
+    async function loadDeliveryDates() {
+  const sel = document.getElementById('deliveryDateSelect');
+  sel.innerHTML = '<option value="">Loading dates...</option>';
+  const res = await fetch('https://moes-jerky-backend3.onrender.com/delivery-dates');
+  const dates = await res.json();
+  if (!dates.length) {
+    sel.innerHTML = '<option value="">No dates available</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">Select a date</option>';
+  dates.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.date;
+    opt.textContent = (new Date(d.date)).toLocaleDateString();
+    sel.appendChild(opt);
+  });
+}
+window.addEventListener('load', () => {
       loadProducts();
       initAddressAutocomplete();
       initializeSquare();
+      loadDeliveryDates();
     });
   </script>
 </body>

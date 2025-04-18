@@ -92,6 +92,7 @@ input.product-input:focus {
       <div id="loggedInUser"></div>
       <button class="tab-btn active" data-tab="orders" onclick="switchTab('orders')">Orders</button>
       <button class="tab-btn" data-tab="products" onclick="switchTab('products')">Products</button>
+<button class="tab-btn" data-tab="dates" onclick="switchTab('dates')">Delivery Dates</button>
       <button class="tab-btn" data-tab="users" onclick="switchTab('users')">Users</button>
       <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">Analytics</button>
     </div>
@@ -109,6 +110,18 @@ input.product-input:focus {
       <!-- Products -->
       <div id="productsTab" class="tab-content">
         <h2>Product Management</h2>
+      </div>
+      <!-- Delivery Dates -->
+      <div id="datesTab" class="tab-content">
+        <h2>Delivery Dates Management</h2>
+        <div style="margin-bottom:1rem;">
+          <input type="date" id="newDateInput" class="date-input" />
+          <button class="add-date-btn" onclick="addDeliveryDate()">Add Date</button>
+        </div>
+        <table id="datesTable">
+          <tr><th>Date</th><th>Actions</th></tr>
+        </table>
+      </div>
         <table id="productsTable">
           <tr><th>Name</th><th>Price</th><th>Actions</th></tr>
         </table>
@@ -309,6 +322,44 @@ function saveOrderStatus(orderId) {
   updateOrderStatus(orderId, newStatus);
   document.getElementById('save-status-' + orderId).style.display = 'none';
 }
+// Delivery Dates Management
+let deliveryDates = [];
+async function fetchDeliveryDates() {
+  const res = await fetch('https://moes-jerky-backend3.onrender.com/delivery-dates');
+  deliveryDates = await res.json();
+  renderDeliveryDates();
+}
+function renderDeliveryDates() {
+  const tbl = document.getElementById('datesTable');
+  tbl.innerHTML = '<tr><th>Date</th><th>Actions</th></tr>';
+  deliveryDates.forEach((d, i) => {
+    tbl.innerHTML += `<tr><td>${(new Date(d.date)).toLocaleDateString()}</td><td><button class='remove-date-btn' onclick='deleteDeliveryDate("${d._id}")'>Remove</button></td></tr>`;
+  });
+}
+async function addDeliveryDate() {
+  const input = document.getElementById('newDateInput');
+  const val = input.value;
+  if (!val) return alert('Please select a date');
+  const res = await fetch('https://moes-jerky-backend3.onrender.com/delivery-dates', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date: val })
+  });
+  if (res.ok) {
+    input.value = '';
+    fetchDeliveryDates();
+  } else {
+    alert('Failed to add date');
+  }
+}
+async function deleteDeliveryDate(id) {
+  if (!confirm('Remove this date?')) return;
+  const res = await fetch(`https://moes-jerky-backend3.onrender.com/delivery-dates/${id}`, { method: 'DELETE' });
+  if (res.ok) fetchDeliveryDates();
+  else alert('Failed to remove date');
+}
+// Fetch dates on admin load
+window.addEventListener('load', fetchDeliveryDates);
 </script>
 </body>
 </html>
