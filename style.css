@@ -324,7 +324,7 @@ aside.open { transform: translateX(0); }
   box-sizing: border-box;
   padding: 14px 0;
   margin-bottom: 18px;
-  margin-top: 0 !important;
+  margin-top: 16px;
   background: linear-gradient(90deg, #a83232 0%, #8b0000 100%);
   color: #fff;
   font-size: 1.08em;
