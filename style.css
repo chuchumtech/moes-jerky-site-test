@@ -319,7 +319,7 @@ aside.open { transform: translateX(0); }
 #checkoutForm .back-btn {
   display: inline-block;
   min-width: 160px;
-  width: auto;
+  width: 100%;
   box-sizing: border-box;
   padding: 12px 28px;
   margin-bottom: 18px;
@@ -334,6 +334,9 @@ aside.open { transform: translateX(0); }
   box-shadow: 0 2px 8px rgba(139,0,0,0.06);
   letter-spacing: 0.02em;
   transition: background 0.2s, transform 0.12s, box-shadow 0.2s;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
 }
 #checkoutForm .back-btn:hover {
   background: linear-gradient(90deg, #8b0000 0%, #a83232 100%);
