@@ -175,13 +175,21 @@
     async function renderOrders() {
       const res = await fetch('https://moes-jerky-backend3.onrender.com/orders'); orders = await res.json();
       const table = document.getElementById('ordersTable'), s = document.getElementById('orderSearch').value.toLowerCase();
-      table.innerHTML = '<tr><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Actions</th></tr>';
+      table.innerHTML = '<tr><th>Customer</th><th>Items</th><th>Total</th><th>Type</th><th>Status</th><th>Actions</th></tr>';
       orders.filter(o => { const c = o.customer || {}; return c.name.toLowerCase().includes(s) || c.email.toLowerCase().includes(s) || c.phone.includes(s); }).forEach(o => {
         table.innerHTML += `<tr>
-          <td>${o.customer.name}<br>${o.customer.email}<br>${o.customer.phone}<br>${o.customer.address}</td>
+          <td><a href="order.html?id=${o._id}" target="_blank" style="color:#8B0000; text-decoration:underline; font-weight:600;">${o.customer.name}</a></td>
           <td>${o.cart.map(i => i.name + ' x' + i.quantity).join(', ')}</td>
           <td>$${o.amount.toFixed(2)}</td>
-          <td><select onchange="updateOrderStatus('${o._id}',this.value)"><option ${o.status==='Processing'?'selected':''}>Processing</option><option ${o.status==='Shipped'?'selected':''}>Shipped</option><option ${o.status==='Delivered'?'selected':''}>Delivered</option></select></td>
+          <td>${o.customer.fulfillment === 'delivery' ? 'Delivery' : 'Pickup'}</td>
+          <td>
+  <select id="status-select-${o._id}" onchange="showSaveButton('${o._id}')">
+    <option ${o.status==='Processing'?'selected':''}>Processing</option>
+    <option ${o.status==='Shipped'?'selected':''}>Shipped</option>
+    <option ${o.status==='Delivered'?'selected':''}>Delivered</option>
+  </select>
+  <button id="save-status-${o._id}" class="save-btn" style="display:none; margin-left:8px; padding:0.45rem 1.1rem; font-size:0.95em;" onclick="saveOrderStatus('${o._id}')">Save</button>
+</td>
           <td><button onclick="deleteOrder('${o._id}')">Delete</button></td>
         </tr>`;
       });
@@ -201,6 +209,15 @@
     async function saveUsers() { await fetch('https://moes-jerky-backend3.onrender.com/users/bulk',{ method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(users) }); renderUsers(); }
     // Analytics
     async function renderAnalytics() { const res = await fetch('https://moes-jerky-backend3.onrender.com/orders'); orders = await res.json(); const total = orders.reduce((s,o)=>s+o.amount,0), count = orders.length, avg = count?total/count:0; document.getElementById('totalSales').innerText=`$${total.toFixed(2)}`; document.getElementById('orderCount').innerText=count; document.getElementById('avgOrder').innerText=`$${avg.toFixed(2)}`; const prodCount = {}, tp = document.getElementById('topProducts'); tp.innerHTML=''; orders.forEach(o=>o.cart.forEach(i=>prodCount[i.name]=(prodCount[i.name]||0)+i.quantity)); Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([nm,q])=>{ const li=document.createElement('li'); li.innerText=`${nm}: ${q}`; tp.appendChild(li); }); const cm = {}, cs = document.getElementById('customerStats'); cs.innerHTML=''; orders.forEach(o=>{ cm[o.customer.name]=(cm[o.customer.name]||0)+o.amount }); Object.entries(cm).forEach(([nm,val])=>{ const li=document.createElement('li'); li.innerText=`${nm}: $${val.toFixed(2)}`; cs.appendChild(li); }); }
-  </script>
+  function showSaveButton(orderId) {
+  document.getElementById('save-status-' + orderId).style.display = 'inline-block';
+}
+function saveOrderStatus(orderId) {
+  const select = document.getElementById('status-select-' + orderId);
+  const newStatus = select.value;
+  updateOrderStatus(orderId, newStatus);
+  document.getElementById('save-status-' + orderId).style.display = 'none';
+}
+</script>
 </body>
 </html>

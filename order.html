@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Details</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f8f8; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 2rem auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(139,0,0,0.08); padding: 2rem; }
+    h1 { color: #8B0000; }
+    .section { margin-bottom: 1.5rem; }
+    .label { color: #888; font-size: 0.98em; }
+    .value { font-weight: 600; font-size: 1.1em; }
+    .back-link { color: #8B0000; text-decoration: none; font-weight: bold; margin-bottom: 1rem; display: inline-block; }
+    .order-items { margin: 1em 0; }
+    .order-items li { margin-bottom: 0.3em; }
+    .status { font-weight: bold; font-size: 1.1em; }
+    .fulfillment { font-weight: bold; color: #8B0000; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a class="back-link" href="backend.html">&larr; Back to Orders</a>
+    <h1>Order Details</h1>
+    <div id="orderDetails">Loading...</div>
+  </div>
+  <script>
+    async function loadOrder() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (!id) { document.getElementById('orderDetails').innerText = 'Order ID not specified.'; return; }
+      try {
+        const res = await fetch('https://moes-jerky-backend3.onrender.com/orders');
+        const orders = await res.json();
+        const order = orders.find(o => o._id === id);
+        if (!order) { document.getElementById('orderDetails').innerText = 'Order not found.'; return; }
+        const c = order.customer || {};
+        document.getElementById('orderDetails').innerHTML = `
+          <div class="section"><span class="label">Order #:</span> <span class="value">${order.orderNumber || order._id}</span></div>
+          <div class="section"><span class="label">Status:</span> <span class="status">${order.status}</span></div>
+          <div class="section"><span class="label">Type:</span> <span class="fulfillment">${c.fulfillment === 'delivery' ? 'Delivery' : 'Pickup'}</span></div>
+          <div class="section"><span class="label">Customer Name:</span> <span class="value">${c.name}</span></div>
+          <div class="section"><span class="label">Email:</span> <span class="value">${c.email}</span></div>
+          <div class="section"><span class="label">Phone:</span> <span class="value">${c.phone}</span></div>
+          <div class="section"><span class="label">Address:</span> <span class="value">${c.address || '-'}</span></div>
+          <div class="section"><span class="label">Items:</span><ul class="order-items">${order.cart.map(i => `<li>${i.name} x${i.quantity}</li>`).join('')}</ul></div>
+          <div class="section"><span class="label">Total Paid:</span> <span class="value">$${order.amount.toFixed(2)}</span></div>
+        `;
+      } catch (err) {
+        document.getElementById('orderDetails').innerText = 'Error loading order details.';
+      }
+    }
+    loadOrder();
+  </script>
+</body>
+</html>
