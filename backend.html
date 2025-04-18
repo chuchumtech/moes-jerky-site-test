@@ -177,6 +177,7 @@
       const table = document.getElementById('ordersTable'), s = document.getElementById('orderSearch').value.toLowerCase();
       table.innerHTML = '<tr><th>Customer</th><th>Items</th><th>Total</th><th>Type</th><th>Status</th><th>Actions</th></tr>';
       orders.filter(o => { const c = o.customer || {}; return c.name.toLowerCase().includes(s) || c.email.toLowerCase().includes(s) || c.phone.includes(s); }).forEach(o => {
+        console.log('Order object:', o);
         table.innerHTML += `<tr>
           <td><a href="order.html?id=${o._id}" target="_blank" style="color:#8B0000; text-decoration:underline; font-weight:600;">${o.customer.name}</a></td>
           <td>${o.cart.map(i => i.name + ' x' + i.quantity).join(', ')}</td>
@@ -194,7 +195,15 @@
         </tr>`;
       });
     }
-    async function updateOrderStatus(id, status) { await fetch(`https://moes-jerky-backend3.onrender.com/orders/${id}`, { method: 'PUT', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({status}) }); renderOrders(); }
+    async function updateOrderStatus(id, status) {
+  console.log('Updating order status:', id, status);
+  await fetch(`https://moes-jerky-backend3.onrender.com/orders/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({status})
+  });
+  renderOrders();
+}
     async function deleteOrder(id) { if (confirm('Delete this order?')) { await fetch(`https://moes-jerky-backend3.onrender.com/orders/${id}`, { method: 'DELETE' }); renderOrders(); }}
     function exportOrders() { let csv='Name,Email,Phone,Address,Items,Amount,Status\n'; orders.forEach(o=>{ const c=o.customer; csv+=`"${c.name}","${c.email}","${c.phone}","${c.address}","${o.cart.map(i=>i.name+' x'+i.quantity).join(' | ')}","$${o.amount.toFixed(2)}","${o.status}"\n`; }); const b=new Blob([csv],{type:'text/csv'}), u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download='orders.csv'; a.click(); }
     // Products
