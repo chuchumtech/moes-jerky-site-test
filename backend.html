@@ -200,8 +200,14 @@ select.modern-input:focus {
       <div id="productsTab" class="tab-content">
         <h2>Product Management</h2>
         <table id="productsTable">
-          <tr><th>Name</th><th>Price</th><th>Actions</th></tr>
+          <tr><th>Name</th><th>Price</th><th>Featured</th><th>Actions</th></tr>
         </table>
+        <div style="margin:10px 0 0 0;">
+          <label for="featuredBadgeText" style="font-weight:500;color:#8b0000;margin-right:8px;">Featured Badge Text:</label>
+          <input id="featuredBadgeText" class="modern-input" type="text" style="max-width:180px;display:inline-block;" />
+          <button class="save-btn" onclick="saveFeaturedProduct()">Save Featured</button>
+          <span id="featured-save-msg" style="margin-left:12px;color:#0a8a0a;font-weight:bold;"></span>
+        </div>
         <button class="add-btn" onclick="addProduct()">+ Add New Item</button>
         <button class="save-btn" onclick="saveProducts()">Save Changes</button>
       </div>

@@ -16,6 +16,13 @@
     </div>
   </header>
   <main>
+    <section id="featuredProductSection" style="display:none;margin:2.2rem auto 1.5rem auto;max-width:500px;background:#fff5e6;border-radius:16px;box-shadow:0 2px 16px rgba(139,0,0,0.07);padding:1.7rem 2rem 1.3rem 2rem;text-align:center;position:relative;">
+      <span id="featuredBadge" style="position:absolute;top:16px;left:16px;background:#a83232;color:#fff;padding:0.32em 1em;border-radius:18px;font-size:1.01em;font-weight:600;box-shadow:0 2px 8px rgba(139,0,0,0.10);letter-spacing:0.01em;"></span>
+      <h2 id="featuredName" style="margin:0 0 0.5em 0;font-size:1.6em;color:#8b0000;"></h2>
+      <div id="featuredDesc" style="margin-bottom:0.7em;color:#333;font-size:1.13em;"></div>
+      <div id="featuredPrice" style="margin-bottom:1.1em;font-size:1.18em;font-weight:600;color:#a83232;"></div>
+      <button id="featuredBuyBtn" class="btn" style="font-size:1.12em;padding:0.7em 2.2em;border-radius:12px;">Buy Now</button>
+    </section>
     <div class="product-grid" id="products"></div>
     <aside id="cartSidebar">
       <button class="close-btn" onclick="toggleCart()">×</button>
@@ -29,20 +36,20 @@
       <div class="cart-total" id="cartTotal">Total: $0.00</div>
       <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
       <div id="checkoutForm">
-  <button class="back-btn" onclick="showCart()">← Back to Cart</button>
+  <button class="back-btn" onclick="showCart()" style="width:100%;margin-bottom:1.1rem;font-size:1.08em;padding:14px 0;border-radius:12px;background:linear-gradient(90deg,#a83232 0%,#8b0000 100%);color:#fff;font-weight:600;">← Back to Cart</button>
   <h3 style="text-align:center; margin-bottom:1.5rem;">Delivery / Pickup Details</h3>
   <div class="checkout-fields">
-    <input type="text" id="custName" placeholder="Name" required class="modern-input" />
-    <input type="tel" id="custPhone" placeholder="Phone" required class="modern-input" />
-    <input type="email" id="custEmail" placeholder="Email" required class="modern-input" />
-    <input type="text" id="custAddress" placeholder="Address (if delivery)" style="display:none; margin-top:8px;" required class="modern-input" />
+    <input type="text" id="custName" placeholder="Name" required class="modern-input" style="width:100%;" />
+    <input type="tel" id="custPhone" placeholder="Phone" required class="modern-input" style="width:100%;" />
+    <input type="email" id="custEmail" placeholder="Email" required class="modern-input" style="width:100%;" />
+    <input type="text" id="custAddress" placeholder="Address (if delivery)" style="display:none; margin-top:8px;width:100%;" required class="modern-input" />
     <div id="deliveryDateWrap" class="centered-date-wrap">
       <label for="deliveryDateSelect" class="date-label">Choose Delivery/Pickup Date:</label>
       <select id="deliveryDateSelect" required class="modern-input date-select"></select>
       <span id="noDatesMsg" style="color: #a83232; font-size: 0.98em; display:none; margin-left:0.5rem;"></span>
     </div>
     <div id="addrError" style="color:red; font-size:0.9em; display:none; text-align:center;">Please select a valid address from the suggestions.</div>
-    <div id="card-container" style="margin-top:1rem;"></div>
+    <div id="card-container" style="margin-top:1rem;width:100%;max-width:100%;"></div>
     <div id="card-errors" style="color:red; font-size:0.9em; margin-top:0.5rem; text-align:center;"></div>
     <button class="checkout-btn" onclick="completeOrder()">Complete Order</button>
   </div>
@@ -174,9 +181,15 @@ function removeCartItem(id) {
     }
 
     function proceedToCheckout() {
-      document.getElementById('checkoutForm').classList.add('show');
-      document.getElementById('cartSidebar').classList.add('checkout-mode');
-    }
+  // Check if cart has at least one item
+  const hasItems = Object.values(cart).some(qty => qty > 0);
+  if (!hasItems) {
+    alert('Your cart is empty! Please add at least one item to proceed to checkout.');
+    return;
+  }
+  document.getElementById('checkoutForm').classList.add('show');
+  document.getElementById('cartSidebar').classList.add('checkout-mode');
+}
 
     function showCart() {
       document.getElementById('checkoutForm').classList.remove('show');
