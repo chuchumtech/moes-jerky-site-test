@@ -320,10 +320,9 @@ aside.open { transform: translateX(0); }
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 160px;
-  width: auto;
+  width: 100%;
   box-sizing: border-box;
-  padding: 12px 28px;
+  padding: 12px 0;
   margin-bottom: 18px;
   margin-top: 0 !important;
   background: linear-gradient(90deg, #a83232 0%, #8b0000 100%);
