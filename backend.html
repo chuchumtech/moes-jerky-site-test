@@ -89,25 +89,25 @@
 
   <script>
     let users=[], items=[], orders=[], currentUser=null;
-    window.addEventListener('DOMContentLoaded', () => {
+    // Initialize login fields immediately
+document.addEventListener('DOMContentLoaded', () => {
   const boxes = document.querySelectorAll('.code-box');
   if (boxes.length === 0) return;
   boxes[0].focus();
   boxes.forEach((box, idx) => {
     box.addEventListener('input', (e) => {
       const val = e.target.value;
-      // Allow only single digit
-      if (!/^[0-9]$/.test(val)) {
-        box.value = '';
-        return;
-      }
-      // Auto-advance
+      if (!/^[0-9]$/.test(val)) { box.value = ''; return; }
       if (idx < boxes.length - 1) boxes[idx + 1].focus();
-      // If all filled, check code
-      if ([...boxes].every(b => b.value.length === 1)) {
-        checkCode();
+      if ([...boxes].every(b => b.value.length === 1)) checkCode();
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !box.value && idx > 0) {
+        boxes[idx - 1].focus();
       }
     });
+  });
+});
     box.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace' && !box.value && idx > 0) {
         boxes[idx - 1].focus();
