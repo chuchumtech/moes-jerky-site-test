@@ -87,16 +87,42 @@ input.product-input:focus {
   <!-- Admin Interface -->
   <div id="admin">
     <!-- Sidebar -->
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
     <div class="sidebar" id="sidebar">
-      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-      <div id="loggedInUser"></div>
-      <button class="tab-btn active" data-tab="orders" onclick="switchTab('orders')">Orders</button>
-      <button class="tab-btn" data-tab="products" onclick="switchTab('products')">Products</button>
-<button class="tab-btn" data-tab="dates" onclick="switchTab('dates')">Delivery Dates</button>
-      <button class="tab-btn" data-tab="users" onclick="switchTab('users')">Users</button>
-      <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">Analytics</button>
+      <div class="sidebar-header">
+        <button id="sidebarToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      </div>
+      <div class="sidebar-content">
+        <div class="sidebar-link" onclick="switchTab('orders')">
+          <span class="sidebar-icon"><i class="fas fa-receipt"></i></span>
+          <span class="sidebar-text">Orders</span>
+        </div>
+        <div class="sidebar-link" onclick="switchTab('products')">
+          <span class="sidebar-icon"><i class="fas fa-box"></i></span>
+          <span class="sidebar-text">Products</span>
+        </div>
+        <div class="sidebar-link" onclick="switchTab('dates')">
+          <span class="sidebar-icon"><i class="fas fa-truck"></i></span>
+          <span class="sidebar-text">Delivery Dates</span>
+        </div>
+        <div class="sidebar-link" onclick="switchTab('users')">
+          <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+          <span class="sidebar-text">Users</span>
+        </div>
+        <div class="sidebar-link" onclick="switchTab('analytics')">
+          <span class="sidebar-icon"><i class="fas fa-chart-line"></i></span>
+          <span class="sidebar-text">Analytics</span>
+        </div>
+      </div>
     </div>
     <!-- Content Area -->
+    <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+    }
+    </script>
     <div class="content">
       <!-- Orders -->
       <div id="ordersTab" class="tab-content active">
@@ -248,35 +274,26 @@ input.product-input:focus {
       if (tab === 'analytics') renderAnalytics();
     }
     // Orders
-    async function renderOrders() {
-      const res = await fetch('https://moes-jerky-backend3.onrender.com/orders');
-      orders = await res.json();
-      const table = document.getElementById('ordersTable'), s = document.getElementById('orderSearch').value.toLowerCase();
-      table.innerHTML = '<tr><th>Order #</th><th>Customer</th><th>Items</th><th>Total</th><th>Delivery Date</th><th>Status</th><th>Actions</th></tr>';
-      orders.filter(o => {
-        const c = o.customer || {};
-        return c.name.toLowerCase().includes(s) || c.email.toLowerCase().includes(s) || c.phone.includes(s);
-      }).forEach(o => {
-        const c = o.customer || {};
-        table.innerHTML += `
-          <tr>
-            <td>${o.orderNumber || ''}</td>
-            <td>${c.name || ''}<br><span style='font-size:0.93em;color:#888;'>${c.email || ''}<br>${c.phone || ''}</span></td>
-            <td>${o.cart.map(i => `${i.name} x${i.quantity}`).join('<br>')}</td>
-            <td>$${o.amount?.toFixed(2) || '0.00'}</td>
-            <td>${o.deliveryDate ? (new Date(o.deliveryDate)).toLocaleDateString() : '-'}</td>
-            <td>
+async function renderOrders() {
+  const res = await fetch('https://moes-jerky-backend3.onrender.com/orders');
+  orders = await res.json();
+  const table = document.getElementById('ordersTable'), s = document.getElementById('orderSearch').value.toLowerCase();
+  table.innerHTML = '<tr><th>Order #</th><th>Customer</th><th>Items</th><th>Total</th><th>Delivery Date</th><th>Status</th><th>Actions</th></tr>';
+  orders.filter(o => {
+    const c = o.customer || {};
+    return c.name.toLowerCase().includes(s) || c.email.toLowerCase().includes(s) || c.phone.includes(s);
+  }).forEach(o => {
+    const c = o.customer || {};
+    table.innerHTML += `<tr><td>${o.orderNumber || ''}</td><td>${c.name || ''}<br><span style='font-size:0.93em;color:#888;'>${c.email || ''}<br>${c.phone || ''}</span></td><td>${o.cart.map(i => `${i.name} x${i.quantity}`).join('<br>')}</td><td>$${o.amount?.toFixed(2) || '0.00'}</td><td>${o.deliveryDate ? formatDateWithDay(o.deliveryDate) : '-'}</td><td>
               <select id="status-select-${o._id}" onchange="showSaveButton('${o._id}')">
                 <option ${o.status==='Processing'?'selected':''}>Processing</option>
                 <option ${o.status==='Shipped'?'selected':''}>Shipped</option>
                 <option ${o.status==='Delivered'?'selected':''}>Delivered</option>
               </select>
               <button id="save-status-${o._id}" class="save-btn" style="display:none; margin-left:8px; padding:0.45rem 1.1rem; font-size:0.95em;" onclick="saveOrderStatus('${o._id}')">Save</button>
-            </td>
-            <td><button onclick="deleteOrder('${o._id}')">Delete</button></td>
-          </tr>`;
-      });
-    }
+            </td><td><button onclick="deleteOrder('${o._id}')">Delete</button></td></tr>`;
+  });
+}
     async function updateOrderStatus(id, status) {
   console.log('Updating order status:', id, status);
   await fetch(`https://moes-jerky-backend3.onrender.com/orders/${id}`, {
@@ -348,10 +365,15 @@ input.product-input:focus {
 async function renderUsers() {
   const res = await fetch('https://moes-jerky-backend3.onrender.com/users');
   users = await res.json();
-  const tbl = document.getElementById('usersTable');
-  tbl.innerHTML = '<tr><th>Name</th><th>Code</th><th>Actions</th></tr>';
-  users.forEach((u,i)=>{
-    tbl.innerHTML += `<tr><td><input class="modern-input" type="text" value="${u.name}" onchange="users[${i}].name=this.value"/></td><td><input class="modern-input" type="password" value="${u.code}" onchange="users[${i}].code=this.value"/></td><td><button class="modern-btn delete-btn" title="Delete" onclick="deleteUser(${i})">🗑️</button></td></tr>`;
+  const tbody = document.getElementById('usersTableBody');
+  tbody.innerHTML = '';
+  users.forEach((u, i) => {
+    tbody.innerHTML += `
+      <tr>
+        <td><input class="modern-input" type="text" value="${u.name || ''}" onchange="users[${i}].name=this.value"/></td>
+        <td><input class="modern-input" type="password" value="${u.code || ''}" onchange="users[${i}].code=this.value"/></td>
+        <td><button class="modern-btn delete-btn" title="Delete" onclick="deleteUser(${i})">🗑️</button></td>
+      </tr>`;
   });
 }
 // Show add user form
@@ -458,11 +480,16 @@ async function fetchDeliveryDates() {
   deliveryDates = await res.json();
   renderDeliveryDates();
 }
+function formatDateWithDay(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { weekday: 'long', year: '2-digit', month: '2-digit', day: '2-digit' }).replace(/\b(\d{2})\/(\d{2})\/(\d{2})\b/, (m, mm, dd, yy) => `${mm}/${dd}/${yy}`);
+}
+
 function renderDeliveryDates() {
   const tbl = document.getElementById('datesTable');
   tbl.innerHTML = '<tr><th>Date</th><th>Actions</th></tr>';
   deliveryDates.forEach((d, i) => {
-    tbl.innerHTML += `<tr><td>${(new Date(d.date)).toLocaleDateString()}</td><td><button class='remove-date-btn' onclick='deleteDeliveryDate("${d._id}")'>Remove</button></td></tr>`;
+    tbl.innerHTML += `<tr><td>${formatDateWithDay(d.date)}</td><td><button class='remove-date-btn' onclick='deleteDeliveryDate("${d._id}")'>Remove</button></td></tr>`;
   });
 }
 async function addDeliveryDate() {

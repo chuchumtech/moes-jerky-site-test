@@ -1,4 +1,9 @@
 // thankyou.js: Display order details on the thank you page
+function formatDateWithDay(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { weekday: 'long', year: '2-digit', month: '2-digit', day: '2-digit' }).replace(/\b(\d{2})\/(\d{2})\/(\d{2})\b/, (m, mm, dd, yy) => `${mm}/${dd}/${yy}`);
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   // Parse orderNumber from URL
   const params = new URLSearchParams(window.location.search);
@@ -33,6 +38,10 @@ window.addEventListener('DOMContentLoaded', async () => {
         <div class="order-section">
           <h3>Total Paid</h3>
           <p><strong>$${order.amount?.toFixed(2) || '0.00'}</strong></p>
+        </div>
+        <div class="order-section">
+          <h3>Delivery Date</h3>
+          <p>${order.deliveryDate ? formatDateWithDay(order.deliveryDate) : '-'}</p>
         </div>
         <div class="order-section">
           <h3>Delivery Type</h3>
