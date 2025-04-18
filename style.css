@@ -304,3 +304,16 @@ aside.open { transform: translateX(0); }
   border: none;
   cursor: pointer;
 }
+
+/* Remove extra space at top of checkout form */
+#checkoutForm h3 {
+  margin-top: 0 !important;
+  margin-bottom: 10px;
+}
+#checkoutForm .back-btn {
+  margin-bottom: 10px;
+  margin-top: 0 !important;
+}
+#checkoutForm input:first-of-type {
+  margin-top: 0 !important;
+}
