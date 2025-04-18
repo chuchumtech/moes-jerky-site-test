@@ -317,7 +317,9 @@ aside.open { transform: translateX(0); }
   margin-bottom: 10px;
 }
 #checkoutForm .back-btn {
-  width: 100%;
+  display: block;
+  width: 100% !important;
+  box-sizing: border-box;
   padding: 14px 0;
   margin-bottom: 10px;
   margin-top: 0 !important;
