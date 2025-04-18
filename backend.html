@@ -127,7 +127,6 @@ input.product-input:focus {
           <tr><th>Date</th><th>Actions</th></tr>
         </table>
       </div>
-      </div>
       <!-- Users -->
       <div id="usersTab" class="tab-content">
         <h2>User Management</h2>
@@ -145,17 +144,47 @@ input.product-input:focus {
       </div>
       <!-- Analytics -->
       <div id="analyticsTab" class="tab-content">
-        <h2>Analytics Dashboard</h2>
-        <div id="stats">
-          <p>Total Sales: <strong id="totalSales">$0.00</strong></p>
-          <p>Number of Orders: <strong id="orderCount">0</strong></p>
-          <p>Avg Order Value: <strong id="avgOrder">$0.00</strong></p>
-        </div>
-        <h3>Top Products</h3>
-        <ul id="topProducts"></ul>
-        <h3>Customer Spending</h3>
-        <ul id="customerStats"></ul>
+  <h2>Analytics Dashboard</h2>
+  <div class="analytics-stats-grid">
+    <div class="analytics-card">
+      <div class="analytics-card-title"><span class="analytics-icon">💰</span> Total Sales</div>
+      <div class="analytics-card-value" id="totalSales">$0.00</div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-card-title"><span class="analytics-icon">📦</span> Orders</div>
+      <div class="analytics-card-value" id="orderCount">0</div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-card-title"><span class="analytics-icon">📊</span> Avg Order Value</div>
+      <div class="analytics-card-value" id="avgOrder">$0.00</div>
+    </div>
+  </div>
+  <div class="analytics-section">
+    <h3><span class="analytics-icon">🏆</span> Top Products</h3>
+    <ul id="topProducts" class="analytics-list"></ul>
+  </div>
+  <div class="analytics-section">
+    <h3><span class="analytics-icon">👤</span> Customer Spending</h3>
+    <ul id="customerStats" class="analytics-list"></ul>
+  </div>
+  <div class="analytics-section">
+    <h3><span class="analytics-icon">📅</span> Weekly Totals</h3>
+    <div class="analytics-stats-grid">
+      <div class="analytics-card">
+        <div class="analytics-card-title"><span class="analytics-icon">💸</span> Weekly Sales</div>
+        <div class="analytics-card-value" id="weeklySales">$0.00</div>
       </div>
+      <div class="analytics-card">
+        <div class="analytics-card-title"><span class="analytics-icon">🗂️</span> Weekly Orders</div>
+        <div class="analytics-card-value" id="weeklyOrders">0</div>
+      </div>
+    </div>
+  </div>
+  <div class="analytics-section">
+    <h3><span class="analytics-icon">🥩</span> Weekly Product Sales</h3>
+    <ul id="weeklyProducts" class="analytics-list"></ul>
+  </div>
+</div>
     </div>
   </div>
 
@@ -328,7 +357,61 @@ function showAddUserForm() {
     async function deleteUser(i) { if(confirm('Delete this user?')){ users.splice(i,1); renderUsers(); saveUsers(); }}
     async function saveUsers() { await fetch('https://moes-jerky-backend3.onrender.com/users/bulk',{ method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(users) }); renderUsers(); }
     // Analytics
-    async function renderAnalytics() { const res = await fetch('https://moes-jerky-backend3.onrender.com/orders'); orders = await res.json(); const total = orders.reduce((s,o)=>s+o.amount,0), count = orders.length, avg = count?total/count:0; document.getElementById('totalSales').innerText=`$${total.toFixed(2)}`; document.getElementById('orderCount').innerText=count; document.getElementById('avgOrder').innerText=`$${avg.toFixed(2)}`; const prodCount = {}, tp = document.getElementById('topProducts'); tp.innerHTML=''; orders.forEach(o=>o.cart.forEach(i=>prodCount[i.name]=(prodCount[i.name]||0)+i.quantity)); Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([nm,q])=>{ const li=document.createElement('li'); li.innerText=`${nm}: ${q}`; tp.appendChild(li); }); const cm = {}, cs = document.getElementById('customerStats'); cs.innerHTML=''; orders.forEach(o=>{ cm[o.customer.name]=(cm[o.customer.name]||0)+o.amount }); Object.entries(cm).forEach(([nm,val])=>{ const li=document.createElement('li'); li.innerText=`${nm}: $${val.toFixed(2)}`; cs.appendChild(li); }); }
+async function renderAnalytics() {
+  const res = await fetch('https://moes-jerky-backend3.onrender.com/orders');
+  orders = await res.json();
+  const total = orders.reduce((s,o)=>s+o.amount,0), count = orders.length, avg = count?total/count:0;
+  document.getElementById('totalSales').innerText = `$${total.toFixed(2)}`;
+  document.getElementById('orderCount').innerText = count;
+  document.getElementById('avgOrder').innerText = `$${avg.toFixed(2)}`;
+
+  // Top Products
+  const prodCount = {}, tp = document.getElementById('topProducts');
+  tp.innerHTML = '';
+  orders.forEach(o => o.cart.forEach(i => prodCount[i.name] = (prodCount[i.name]||0) + i.quantity));
+  Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([nm,q]) => {
+    const li = document.createElement('li');
+    li.innerText = `${nm}: ${q}`;
+    tp.appendChild(li);
+  });
+
+  // Customer Spending
+  const cm = {}, cs = document.getElementById('customerStats');
+  cs.innerHTML = '';
+  orders.forEach(o => { cm[o.customer.name] = (cm[o.customer.name]||0) + o.amount });
+  Object.entries(cm).forEach(([nm,val]) => {
+    const li = document.createElement('li');
+    li.innerText = `${nm}: $${val.toFixed(2)}`;
+    cs.appendChild(li);
+  });
+
+  // --- Weekly Totals ---
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 6);
+  weekAgo.setHours(0,0,0,0);
+  let weeklySales = 0, weeklyOrders = 0;
+  const weeklyProdCount = {};
+  orders.forEach(o => {
+    const created = new Date(o.createdAt);
+    if (created >= weekAgo) {
+      weeklySales += o.amount;
+      weeklyOrders++;
+      o.cart.forEach(i => weeklyProdCount[i.name] = (weeklyProdCount[i.name]||0) + i.quantity);
+    }
+  });
+  document.getElementById('weeklySales').innerText = `$${weeklySales.toFixed(2)}`;
+  document.getElementById('weeklyOrders').innerText = weeklyOrders;
+
+  // --- Weekly Product Sales ---
+  const wp = document.getElementById('weeklyProducts');
+  wp.innerHTML = '';
+  Object.entries(weeklyProdCount).sort((a,b)=>b[1]-a[1]).forEach(([nm, q]) => {
+    const li = document.createElement('li');
+    li.innerText = `${nm}: ${q}`;
+    wp.appendChild(li);
+  });
+}
+
   function showSaveButton(orderId) {
   document.getElementById('save-status-' + orderId).style.display = 'inline-block';
 }
