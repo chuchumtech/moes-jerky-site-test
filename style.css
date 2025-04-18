@@ -87,7 +87,10 @@ aside.open { transform: translateX(0); }
   opacity: 0;
   overflow: hidden;
   pointer-events: none;
-  transition: max-height 0.4s, opacity 0.4s;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+  transition: max-height 0.4s, opacity 0.4s, margin 0.4s, padding 0.4s, height 0.4s;
 }
 #cartSidebar:not(.checkout-mode) > #checkoutForm {
   max-height: 0;

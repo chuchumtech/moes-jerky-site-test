@@ -137,6 +137,7 @@
 function removeCartItem(id) {
   delete cart[id];
   renderCart();
+  renderProducts();
 }
 
     function updateFulfillment() {
